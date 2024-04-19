@@ -21,7 +21,7 @@ classifiers = [
     "Typing :: Typed",
 ]
 dependencies = [
-    "gertils @ git+https://github.com/gerlichlab/gertils@v0.4.3",
+    "gertils @ git+https://github.com/gerlichlab/gertils@v0.4.4",
     "napari >= 0.4.19; sys_platform == 'darwin'",
     "napari[all] >= 0.4.19; sys_platform != 'darwin'",
     "numpy",
