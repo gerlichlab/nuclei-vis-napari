@@ -1,0 +1,11 @@
+name: nuclei-vis-napari
+contributions:
+  commands:
+  - id: nuclei-vis-napari.read_nuclei
+    title: Read nuclei images, masks, and labels data
+    python_name: nuclei_vis_napari.reader:get_reader
+  readers:
+  - command: nuclei-vis-napari.read_nuclei
+    filename_patterns:
+    - 'images*'
+    accepts_directories: true

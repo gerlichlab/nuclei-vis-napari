@@ -1,0 +1,147 @@
+[project]
+name = "nuclei-vis-napari"
+dynamic = ["version"]
+requires-python = ">= 3.10"
+authors = [
+    {name = "Vince Reuter"}
+]
+description = "This project facilitates viewing nuclei and nuclear masks."
+readme = "README.md"
+license = {file = "LICENSE"}
+keywords = ["visualisation", "bioinformatics", "napari", "nuclei"]
+classifiers = [
+    "Development Status :: 1 - Planning",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: MacOS",
+    "Operating System :: Microsoft :: Windows",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+    "Typing :: Typed",
+]
+dependencies = [
+    "gertils @ git+https://github.com/gerlichlab/gertils@v0.4.2",
+    "napari >= 0.4.19; sys_platform == 'darwin'",
+    "napari[all] >= 0.4.19; sys_platform != 'darwin'",
+    "numpy",
+    "numpydoc_decorator @ git+https://github.com/vreuter/numpydoc_decorator@v2.2.1",
+    "pandas",
+    "pyqt6 >= 6.5.0; sys_platform == 'darwin'",
+    "zarr >= 2.4.12",
+]
+
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project.urls]
+Homepage = "https://github.com/gerlichlab/nuclei-vis-napari"
+Repository = "https://github.com/gerlichlab/nuclei-vis-napari.git"
+Issues = "https://github.com/gerlichlab/nuclei-vis-napari/issues"
+
+[tool.setuptools.dynamic]
+version = { attr = "nuclei_vis_napari.__version__" }
+
+[tool.setuptools.package-data]
+nuclei_vis_napari = [ "napari.yaml" ]
+
+[project.entry-points."napari.manifest"]
+nuclei-vis-napari = "nuclei_vis_napari:napari.yaml"
+
+[project.optional-dependencies]
+formatting = [
+    "ruff >= 0.3",
+    "codespell >= 2.2.4",
+]
+linting = [
+    "mypy >= 1.0.1",
+    "pandas-stubs",
+    "ruff >= 0.3",
+]
+testsuite = [
+    "pytest >= 7.1.0",
+    "pytest-cov",
+]
+
+[tool.codespell]
+skip = ".git,.mypy_cache,.nox,.vscode,__pycache__,poetry.lock"
+builtin = "clear,rare,informal,usage,code,names"
+ignore-words-list = "jupyter,iff"
+check-filenames = true
+uri-ignore-words-list = "*"
+
+[tool.ruff]
+# Black uses line-length = 88, but allows exceptions when breaking the line
+# would lead to other rule violations. Use 100 as a maximum hard limit:
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = [
+    # Missing members
+    "ANN10",  # Deprecated: Missing type annotation for self/cls in (class)method
+    "D105",  # Missing docstring in magic method
+    "ANN204", # Missing return type annotation for special method
+
+    # Opinionated syntax
+    "D203", # Ignore this to instead opt for class body or docstring to possibly start right away under class.
+    "D213", # Ignore this to instead opt for summary part of docstring to be on first physical line.
+    "TRY003", # Avoid specifying long messages outside the exception class
+    "C408",  # Unnecessary `dict` call (rewrite as a literal)
+    "EM",  # Exception must not use a (f-)string literal, assign to variable first
+    "FIX002",  # Line contains TODO, consider resolving the issue
+    "D400",  # First line should end with a period
+    "D415",  # First line should end with a period, question mark, or exclamation point
+    "N818",  # Exception should be named with an Error suffix
+    "PLR0913", # Too many arguments in function definition
+    "D401", # First line of docstring should be in imperative mood
+
+    # Imports and type annotations
+    "ANN003",  # Missing type annotation for kwargs
+    "FA100",  # Missing `from __future__ import annotations`, but uses `typing.*`
+    "TCH002",  # Move third-party import `...` into a type-checking block
+    "TCH003",  # Move standard library import `...` into a type-checking block
+    "UP007",  # Use `X | Y` for type annotations
+
+    # Ruff recommends avoiding these checks when using `ruff format`. Since
+    # `ruff format` is a drop-in replacement for `black`, we avoid the same
+    # checks here (https://docs.astral.sh/ruff/formatter/#conflicting-lint-rules
+    # has more details):
+    "W191",  # tab-indentation
+    "E111",  # indentation-with-invalid-multiple
+    "E114",  # indentation-with-invalid-multiple-comment
+    "E117",  # over-indented
+    "D206",  # indent-with-spaces
+    "D300",  # triple-single-quotes
+    "Q000",  # bad-quotes-inline-string
+    "Q001",  # bad-quotes-multiline-string
+    "Q002",  # bad-quotes-docstring
+    "Q003",  # avoidable-escaped-quote
+    "COM812",  # missing-trailing-comma
+    "COM819",  # prohibited-trailing-comma
+    "ISC001",  # single-line-implicit-string-concatenation
+    "ISC002",  # multi-line-implicit-string-concatenation
+    "E501",  # line-too-long
+
+    # Other
+    "PLR0912",  # too many branches (of a conditional)
+    "TD002",  # missing author in TODO
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = [
+    # Ignore some groups of checks in our test code.
+    "ANN",  # Type annotations
+    "D10",  # Missing docstrings
+    "TCH00",  # Imports and type checking blocks
+    "INP001", # File `...` is part of an implicit namespace package. Add an `__init__.py`.
+
+    # Ignore some more specific checks in our test code.
+    "D401",  # First line of docstring should be in imperative mood
+    "N802",  # Function name `...` should be lowercase
+    "S101",  # Use of `assert` detected
+]
+

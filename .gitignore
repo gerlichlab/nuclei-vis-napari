@@ -1,0 +1,9 @@
+# build-related
+build/
+*.egg-info/
+*.pyc
+.venv/
+__pycache__/
+
+# test-related
+.coverage*
