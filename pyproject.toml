@@ -1,7 +1,7 @@
 [project]
 name = "nuclei-vis-napari"
 dynamic = ["version"]
-requires-python = ">= 3.10"
+requires-python = ">= 3.10, < 3.12"
 authors = [
     {name = "Vince Reuter"}
 ]
@@ -17,12 +17,11 @@ classifiers = [
     "Operating System :: Microsoft :: Windows",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
     "Topic :: Scientific/Engineering :: Bio-Informatics",
     "Typing :: Typed",
 ]
 dependencies = [
-    "gertils @ git+https://github.com/gerlichlab/gertils@v0.4.2",
+    "gertils @ git+https://github.com/gerlichlab/gertils@v0.4.3",
     "napari >= 0.4.19; sys_platform == 'darwin'",
     "napari[all] >= 0.4.19; sys_platform != 'darwin'",
     "numpy",
@@ -62,7 +61,7 @@ linting = [
 ]
 testsuite = [
     "pytest >= 7.1.0",
-    "pytest-cov",
+    "pytest-cov >= 5.0.0",
 ]
 
 [tool.codespell]
@@ -71,6 +70,26 @@ builtin = "clear,rare,informal,usage,code,names"
 ignore-words-list = "jupyter,iff"
 check-filenames = true
 uri-ignore-words-list = "*"
+
+[tool.mypy]
+files = ['nuclei_vis_napari/*.py']
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_return_any = true
+warn_unreachable = true
+
+[[tool.mypy.overrides]]
+module = "nuclei_vis_napari.*"
+disallow_untyped_defs = true
+disallow_untyped_calls = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_any_unimported = true
+disallow_any_explicit = true
+disallow_any_generics = true
+disallow_subclassing_any = true
+implicit_optional = false
+strict_optional = true
 
 [tool.ruff]
 # Black uses line-length = 88, but allows exceptions when breaking the line
