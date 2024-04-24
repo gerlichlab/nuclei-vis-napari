@@ -21,7 +21,17 @@ A Napari window with a single slider (corresponding to field of view) should res
 
 The fields of view displayed will be those for which all three files (image, masks, and points/labels) were present in the [three subfolders](#subfolders-structure). The `napari` slider is just a 0-based index, so fields of view are relabeled as a contiguous sequence of integers beginning from 0, regardless of how they were initially labeled. This is why it's generally advisable (and how should be done by `looptrace`) to have the same fields of view in each subfolder, numbered as a contiguous subinterval of the natural numbers.
 
-### Details and troubleshooting
+### Key point: dimensionality of nuclei images
+In most versions of the software, `looptrace` should give you `nuc_images` that are two-dimensional; this should work well out-of-the-box with this plugin.
+If, however, you're using data from an older version, or are using nuclei images from a different software, you should be aware of the implications of the dimensionality of images you're providing.
+
+__Dimensionality...__
+* _< 2 or > 5_: this won't work
+* _4 or 5_: if 5D, the first dimension must be trivial (length 1); the second dimension will also need to be trivial, or you'll need to indicate which channel is for nuclei staining by setting the value of `LOOPTRACE_NAPARI_NUCLEI_CHANNEL_ENV_VAR` to the appropriate (0-based) integer value, e.g. by saying `export LOOPTRACE_NAPARI_NUCLEI_CHANNEL_ENV_VAR=0` in the command with which you start Napari.
+* _3_: all good; first dimension is either trivial (length 0), or will be collapsed by taking max-projection along it
+* _2_: all good; this is the expectation/default.
+
+### Other details and troubleshooting
 * Each relevant file, regardless of which kind of data are inside, should have a basename like `PXXXX`, where `XXXX` corresponds to the 1-based integer index of the field of view, left-padded with zeroes, e.g. P0001.
 * Each image or masks file should have a `.zarr` extension.
 * Each points/labels file should have a `.nuclear_masks.csv` extension.
