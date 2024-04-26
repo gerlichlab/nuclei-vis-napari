@@ -27,7 +27,7 @@ If, however, you're using data from an older version, or are using nuclei images
 
 __Dimensionality...__
 * _< 2 or > 5_: this won't work
-* _4 or 5_: if 5D, the first dimension must be trivial (length 1); the second dimension will also need to be trivial, or you'll need to indicate which channel is for nuclei staining by setting the value of `LOOPTRACE_NAPARI_NUCLEI_CHANNEL_ENV_VAR` to the appropriate (0-based) integer value, e.g. by saying `export LOOPTRACE_NAPARI_NUCLEI_CHANNEL_ENV_VAR=0` in the command with which you start Napari.
+* _4 or 5_: if 5D, the first dimension must be trivial (length 1); the second dimension will also need to be trivial, or you'll need to indicate which channel is for nuclei staining by setting the value of `LOOPTRACE_NAPARI_NUCLEI_CHANNEL_ENV_VAR` to the appropriate (0-based) integer value, e.g. by saying `LOOPTRACE_NAPARI_NUCLEI_CHANNEL_ENV_VAR=0` in the command with which you start Napari.
 * _3_: all good; first dimension is either trivial (length 0), or will be collapsed by taking max-projection along it
 * _2_: all good; this is the expectation/default.
 
