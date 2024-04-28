@@ -60,8 +60,10 @@ linting = [
     "ruff >= 0.3",
 ]
 testsuite = [
+    "npe2",
     "pytest >= 7.1.0",
     "pytest-cov >= 5.0.0",
+    "typer",
 ]
 
 [tool.codespell]
@@ -90,6 +92,9 @@ disallow_any_generics = true
 disallow_subclassing_any = true
 implicit_optional = false
 strict_optional = true
+
+[tool.pytest.ini_options]
+addopts = "-vv --cov nuclei_vis_napari --cov-report term-missing"
 
 [tool.ruff]
 # Black uses line-length = 88, but allows exceptions when breaking the line
