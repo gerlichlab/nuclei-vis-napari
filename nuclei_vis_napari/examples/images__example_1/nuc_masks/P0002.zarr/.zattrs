@@ -1,0 +1,22 @@
+{
+    "multiscale": {
+        "multiscales": [
+            {
+                "axes": [
+                    "t",
+                    "c",
+                    "z",
+                    "y",
+                    "x"
+                ],
+                "datasets": [
+                    {
+                        "path": "0"
+                    }
+                ],
+                "name": "nuc_masks_P0002",
+                "version": "0.3"
+            }
+        ]
+    }
+}
