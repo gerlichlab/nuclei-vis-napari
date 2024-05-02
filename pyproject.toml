@@ -50,6 +50,9 @@ version = { attr = "nuclei_vis_napari.__version__" }
 nuclei-vis-napari = "nuclei_vis_napari:napari.yaml"
 
 [project.optional-dependencies]
+coverage = [
+    "coverage >= 7.5.0",
+]
 formatting = [
     "ruff >= 0.3",
     "codespell >= 2.2.4",
@@ -63,7 +66,6 @@ testsuite = [
     "hypothesis[numpy]",
     "npe2",
     "pytest >= 7.1.0",
-    "pytest-cov >= 5.0.0",
     "typer",
 ]
 
@@ -93,9 +95,6 @@ disallow_any_generics = true
 disallow_subclassing_any = true
 implicit_optional = false
 strict_optional = true
-
-[tool.pytest.ini_options]
-addopts = "-vv --cov nuclei_vis_napari --cov-report term-missing"
 
 [tool.ruff]
 # Black uses line-length = 88, but allows exceptions when breaking the line

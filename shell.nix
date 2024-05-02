@@ -7,7 +7,7 @@
 }:
 let 
   pyenv = pkgs.python311.withPackages (pp: with pp; [ pip wheel ]);
-  pipInstallExtras = if dev then "\"[formatting,linting,testsuite]\"" else "";
+  pipInstallExtras = if dev then "\"[coverage,formatting,linting,testsuite]\"" else "";
 in
 pkgs.mkShell {
   name = "nuclei-vis-napari-env";
