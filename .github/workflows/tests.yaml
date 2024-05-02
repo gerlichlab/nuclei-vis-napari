@@ -25,7 +25,10 @@ jobs:
       - name: Install project
         run: python -m pip install .[testsuite]
       - name: Run unit tests on Python ${{ matrix.python-version }} on ${{ matrix.os }}
-        run: pytest --cov=nuclei_vis_napari
-      - name: Coveralls
-        uses: coverallsapp/github-action@v2
-
+        run: pytest --cov nuclei_vis_napari
+      - name: Upload coverage reports to Codecov
+        run: |
+          curl -Os https://cli.codecov.io/latest/linux/codecov
+          chmod +x codecov
+          ./codecov --verbose upload-process --fail-on-error -t ${{ secrets.CODECOV_TOKEN }} -n 'service'-${{ github.run_id }} -F service -f coverage-service.xml
+        if: ${{ matrix.os == 'ubuntu-latest' }}
