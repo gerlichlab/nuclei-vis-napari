@@ -22,6 +22,7 @@ classifiers = [
 ]
 dependencies = [
     "gertils @ git+https://github.com/gerlichlab/gertils@v0.4.4",
+    "importlib_resources; python_version < '3.11'",
     "napari >= 0.4.19; sys_platform == 'darwin'",
     "napari[all] >= 0.4.19; sys_platform != 'darwin'",
     "numpy",
@@ -32,7 +33,9 @@ dependencies = [
 ]
 
 [build-system]
-requires = ["setuptools", "wheel"]
+# Use setuptools-scm to get package data properly included.
+# See: https://setuptools.pypa.io/en/latest/userguide/datafiles.html#configuration-options
+requires = ["setuptools", "setuptools-scm", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project.urls]
@@ -42,9 +45,6 @@ Issues = "https://github.com/gerlichlab/nuclei-vis-napari/issues"
 
 [tool.setuptools.dynamic]
 version = { attr = "nuclei_vis_napari.__version__" }
-
-[tool.setuptools.package-data]
-nuclei_vis_napari = [ "napari.yaml" ]
 
 [project.entry-points."napari.manifest"]
 nuclei-vis-napari = "nuclei_vis_napari:napari.yaml"
