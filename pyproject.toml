@@ -60,6 +60,7 @@ linting = [
     "ruff >= 0.3",
 ]
 testsuite = [
+    "hypothesis[numpy]",
     "npe2",
     "pytest >= 7.1.0",
     "pytest-cov >= 5.0.0",
@@ -67,7 +68,7 @@ testsuite = [
 ]
 
 [tool.codespell]
-skip = ".git,.mypy_cache,.nox,.vscode,__pycache__,poetry.lock"
+skip = ".git,.mypy_cache,.nox,.vscode,__pycache__,poetry.lock,*.zarr"
 builtin = "clear,rare,informal,usage,code,names"
 ignore-words-list = "jupyter,iff"
 check-filenames = true

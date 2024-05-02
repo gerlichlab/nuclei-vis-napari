@@ -8,18 +8,17 @@ from pathlib import Path
 from typing import Literal, Optional
 
 import numpy as np
-import numpy.typing as npt
-from gertils.types import FieldOfViewFrom1
+from gertils.types import FieldOfViewFrom1, PixelArray
 from numpydoc_decorator import doc  # type: ignore[import-untyped]
 
 from .data_bundles import NucleiDataSubfolders, NucleiVisualisationData
-from .type_aliases import PathOrPaths, PixelArray
+from .napari_layer import LayerData, LayerParams, NapariLayer, NapariLayerType
+from .type_aliases import PathOrPaths
 
 # Specific layer types
-LayerParams = dict[str, object]
-ImageLayer = tuple[npt.ArrayLike, LayerParams, Literal["image"]]
-MasksLayer = tuple[npt.ArrayLike, LayerParams, Literal["labels"]]
-CentroidsLayer = tuple[npt.ArrayLike, LayerParams, Literal["points"]]
+ImageLayer = tuple[LayerData, LayerParams, Literal["image"]]
+MasksLayer = tuple[LayerData, LayerParams, Literal["labels"]]
+CentroidsLayer = tuple[LayerData, LayerParams, Literal["points"]]
 FullDataLayer = ImageLayer | MasksLayer | CentroidsLayer
 
 # Other type aliases
@@ -35,7 +34,7 @@ Reader = Callable[[PathOrPaths], list[FullDataLayer]]
 )
 def get_reader(path: PathOrPaths) -> Optional[Reader]:  # noqa: D103
     def do_not_parse(why: str, *, level: int = logging.DEBUG) -> None:
-        logging.log(level, "%s, cannot read looptrace nuclei visualisation data: %s", why, path)
+        logging.log(level, "%s, cannot read looptrace nuclei visualisation data", why)
 
     # Input should be a single extant folder.
     if isinstance(path, list):
@@ -59,9 +58,14 @@ def get_reader(path: PathOrPaths) -> Optional[Reader]:  # noqa: D103
 
     def parse(root: PathOrPaths) -> list[FullDataLayer]:
         if not _is_path_like(root):
-            raise TypeError(f"Non-path-like as nuclei data: {type(root).__name__}")
+            # Impossibility should be assured by the above logic, so don't test for coverage.
+            raise TypeError(
+                f"Non-path-like as nuclei data: {type(root).__name__}"
+            )  # pragma: no cover
         # Ignore type warning here b/c we've conditionally proven arg type is correct.
-        return list(build_layers(NucleiDataSubfolders.read_all_from_root(root)))  # type: ignore[arg-type]
+        data_by_fov = NucleiDataSubfolders.read_all_from_root(root)  # type: ignore[arg-type]
+        image_layer, masks_layer, centroids_layer = build_layers(data_by_fov)
+        return [image_layer.as_image, masks_layer.as_labels, centroids_layer.as_points]
 
     return parse
 
@@ -69,16 +73,29 @@ def get_reader(path: PathOrPaths) -> Optional[Reader]:  # noqa: D103
 @doc(
     summary="Build the multiple layers (image, masks, points) to look at nuclei in napari.",
     parameters=dict(bundles="Mapping from FOV to the bundle of data needed to visualise its data"),
+    raises=dict(RuntimeError="If images and masks aren't entirely uniform w.r.t. shape"),
     returns="The layers needed to visualise nuclei across all FOVs",
 )
 def build_layers(  # noqa: D103
     bundles: Mapping[FieldOfViewFrom1, NucleiVisualisationData],
-) -> tuple[ImageLayer, MasksLayer, CentroidsLayer]:
+) -> tuple[NapariLayer, NapariLayer, NapariLayer]:
     images = []
     masks = []
     nuclei_points = []
     nuclei_labels = []
+    image_shape: tuple[int, ...]
     for i, (_, visdata) in enumerate(sorted(bundles.items(), key=itemgetter(0))):
+        img = visdata.image
+        if i == 0:
+            image_shape = img.shape
+        if img.shape != image_shape:
+            raise RuntimeError(
+                f"Image shape for FOV {i} doesn't match previous: {img.shape} != {image_shape}"
+            )
+        if visdata.masks.shape != image_shape:
+            raise RuntimeError(
+                f"Masks shape for FOV {i} doesn't match previous: {visdata.masks.shape} != {image_shape}"
+            )
         images.append(visdata.image)
         masks.append(visdata.masks)
         for nuc, pt in visdata.centers:
@@ -103,10 +120,22 @@ def build_layers(  # noqa: D103
         "properties": {"nucleus": nuclei_labels},
     }
 
-    images_layer = (images, {"name": "max_proj_z"}, "image")
-    masks_layer = (masks, {"name": "masks"}, "labels")
-    points_layer = (nuclei_points, points_params, "points")
-    return images_layer, masks_layer, points_layer  # type: ignore[return-value]
+    images_layer = NapariLayer(
+        data=images,
+        parameters={"name": "max_proj_z"},
+        get_type=NapariLayerType.Image,
+    )
+    masks_layer = NapariLayer(
+        data=masks,
+        parameters={"name": "masks"},
+        get_type=NapariLayerType.Labels,
+    )
+    points_layer = NapariLayer(
+        data=nuclei_points,
+        parameters=points_params,
+        get_type=NapariLayerType.Points,
+    )
+    return images_layer, masks_layer, points_layer
 
 
 def _is_path_like(obj: object) -> bool:
