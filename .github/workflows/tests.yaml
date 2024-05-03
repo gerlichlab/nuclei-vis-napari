@@ -88,7 +88,7 @@ jobs:
         with:
           auth: ${{ secrets.GIST_BADGE_SECRET }}
           gistID: 5d09224ecea8b55443fb2c92b8e8c6a7
-          filename: badge.json
+          filename: cov_badge__nuclei-vis-napari.json
           label: Coverage
           message: ${{ env.cov_pct }}% (${{ env.covered_statement_count }} of ${{ env.total_statement_count }})
           minColorRange: 50
