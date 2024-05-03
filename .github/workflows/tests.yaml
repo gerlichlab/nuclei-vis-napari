@@ -66,7 +66,11 @@ jobs:
           # See: https://github.com/nedbat/coveragepy/blob/8ab9ff17409e3f6f3f5f2c0076d8b3250e8da4a0/coverage/jsonreport.py#L62-L67
           python -Im coverage json --pretty-print
           export TOTAL_COVERAGE_PERCENTAGE=$(python -c "import json;print(json.load(open('coverage.json'))['totals']['percent_covered_display'])")
+          export COVER_STATEMENTS=$(python -c "import json;print(json.load(open('coverage.json'))['totals']['covered_lines'])")
+          export TOTAL_STATEMENTS=$(python -c "import json;print(json.load(open('coverage.json'))['totals']['num_statements'])")
           echo "cov_pct=$TOTAL_COVERAGE_PERCENTAGE" >> $GITHUB_ENV
+          echo "covered_statement_count=$COVER_STATEMENTS" >> $GITHUB_ENV
+          echo "total_statement_count=$TOTAL_STATEMENTS" >> $GITHUB_ENV
 
           # Report again and fail if under 100%.
           python -Im coverage report --fail-under=100
@@ -86,7 +90,7 @@ jobs:
           gistID: 5d09224ecea8b55443fb2c92b8e8c6a7
           filename: badge.json
           label: Coverage
-          message: ${{ env.cov_pct }}%
+          message: ${{ env.cov_pct }}% (${{ env.covered_statement_count }} of ${{ env.total_statement_count }})
           minColorRange: 50
           maxColorRange: 90
           valColorRange: ${{ env.cov_pct }}
