@@ -8,6 +8,7 @@ on:
   workflow_dispatch:
 
 jobs:
+  # See: https://hynek.me/articles/ditch-codecov-python/
   test-with-coverage:
     strategy:
       fail-fast: false
@@ -32,6 +33,7 @@ jobs:
           path: .coverage.*
           if-no-files-found: ignore
 
+  # See: https://hynek.me/articles/ditch-codecov-python/
   report-coverage:
     name: Combine and check coverage
     needs: test-with-coverage
@@ -64,6 +66,19 @@ jobs:
           name: html-report
           path: htmlcov
         if: ${{ failure() }}
+
+      # See: https://nedbatchelder.com/blog/202209/making_a_coverage_badge.html
+      - name: Create coverage status badge
+        uses: schneegans/dynamic-badges-action@v1.7.0
+        with:
+          auth: ${{ secrets.GIST_BADGE_SECRET }}
+          gistID: 5d09224ecea8b55443fb2c92b8e8c6a7
+          filename: badge.json
+          label: Coverage
+          message: ${{ env.total }}%
+          minColorRange: 50
+          maxColorRange: 90
+          valColorRange: ${{ env.total }}
 
   other-tests:
     strategy:
