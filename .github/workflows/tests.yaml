@@ -25,37 +25,48 @@ jobs:
       - name: Install project
         run: python -Im pip install .[coverage,testsuite]
       - name: Test and measure coverage, on Python ${{ matrix.python-version }} on ${{ matrix.os }}
-        run: coverage run --data-file=.coverage.$(echo ${{ matrix.python-version }} | tr -d .) -m pytest -vv
+        run: coverage run --include=nuclei_vis_napari --data-file=.coverage.$(echo ${{ matrix.python-version }} | tr -d .) -m pytest -vv
       - name: Upload coverage data
         uses: actions/upload-artifact@v4
         with:
+          # To be kept in sync with combiner step to follow
           name: coverage-data-${{ matrix.python-version }}
           path: .coverage.*
           if-no-files-found: ignore
 
   # See: https://hynek.me/articles/ditch-codecov-python/
   report-coverage:
-    name: Combine and check coverage
-    needs: test-with-coverage
+    name: Combine, report, and check coverage
+    needs: test-with-coverage # To be kept in sync with name of coverage-emitting job
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version-file: .python-version-default
+          # Only need to RUN with one Python here, and it shouldn't really matter which one.
+          python-version: "3.11"
           cache: pip
-      - run: python -Im pip install .[coverage]
+      - run: python -Im pip install coverage
       - uses: actions/download-artifact@v4
         with:
+          # To be kept in sync with upload/emission step already done
           pattern: coverage-data-*
           merge-multiple: true
       - name: Combine coverage & fail if it's <100%.
         run: |
           python -Im coverage combine
-          python -Im coverage html --skip-covered --skip-empty
+
+          #python -Im coverage html --skip-covered --skip-empty
+          python -Im coverage html
 
           # Report and write to summary.
           python -Im coverage report --format=markdown >> $GITHUB_STEP_SUMMARY
+
+          # Report and write to JSON for parsing for badge.
+          # See: https://github.com/nedbat/coveragepy/blob/8ab9ff17409e3f6f3f5f2c0076d8b3250e8da4a0/coverage/jsonreport.py#L62-L67
+          python -Im coverage json --pretty-print
+          export TOTAL_COVERAGE_PERCENTAGE=$(python -c "import json;print(json.load(open('coverage.json'))['totals']['percent_covered_display'])")
+          echo "cov_pct=$TOTAL_COVERAGE_PERCENTAGE" >> $GITHUB_ENV
 
           # Report again and fail if under 100%.
           python -Im coverage report --fail-under=100
@@ -75,10 +86,10 @@ jobs:
           gistID: 5d09224ecea8b55443fb2c92b8e8c6a7
           filename: badge.json
           label: Coverage
-          message: ${{ env.total }}%
+          message: ${{ env.cov_pct }}%
           minColorRange: 50
           maxColorRange: 90
-          valColorRange: ${{ env.total }}
+          valColorRange: ${{ env.cov_pct }}
 
   other-tests:
     strategy:
