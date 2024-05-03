@@ -7,4 +7,3 @@
 Visualisation (in Napari) of nuclei from looptrace
 
 Please refer to the [docs](./docs) for usage and/or development information.
-
