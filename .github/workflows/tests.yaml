@@ -25,7 +25,7 @@ jobs:
       - name: Install project
         run: python -Im pip install .[coverage,testsuite]
       - name: Test and measure coverage, on Python ${{ matrix.python-version }} on ${{ matrix.os }}
-        run: coverage run --include=nuclei_vis_napari --data-file=.coverage.$(echo ${{ matrix.python-version }} | tr -d .) -m pytest -vv
+        run: coverage run --omit=tests/*.py --data-file=.coverage.$(echo ${{ matrix.python-version }} | tr -d .) -m pytest -vv
       - name: Upload coverage data
         uses: actions/upload-artifact@v4
         with:
