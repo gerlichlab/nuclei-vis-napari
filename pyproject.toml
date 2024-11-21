@@ -1,7 +1,7 @@
 [project]
 name = "nuclei-vis-napari"
 dynamic = ["version"]
-requires-python = ">= 3.10, < 3.12"
+requires-python = ">= 3.10, < 3.13"
 authors = [
     {name = "Vince Reuter"}
 ]
@@ -17,16 +17,17 @@ classifiers = [
     "Operating System :: Microsoft :: Windows",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "Topic :: Scientific/Engineering :: Bio-Informatics",
     "Typing :: Typed",
 ]
 dependencies = [
-    "gertils @ git+https://github.com/gerlichlab/gertils@v0.4.4",
+    "gertils @ git+https://github.com/gerlichlab/gertils@v0.5.0",
     "importlib_resources; python_version < '3.11'",
     "napari >= 0.4.19; sys_platform == 'darwin'",
     "napari[all] >= 0.4.19; sys_platform != 'darwin'",
     "numpy",
-    "numpydoc_decorator @ git+https://github.com/vreuter/numpydoc_decorator@v2.2.1",
+    "numpydoc_decorator >= 2.2.1",
     "pandas",
     "pyqt6 >= 6.5.0; sys_platform == 'darwin'",
     "zarr >= 2.4.12",
