@@ -54,7 +54,7 @@ class NucleiDataSubfolders(Enum):
         logging.debug("Image paths count: %d", len(image_paths))
         logging.debug("Masks paths count: %d", len(masks_paths))
         logging.debug("Centers paths count: %d", len(centers_paths))
-        bundles: dict[FieldOfViewFrom1, "NucleiVisualisationData"] = {}
+        bundles: dict[FieldOfViewFrom1, NucleiVisualisationData] = {}
         for fov in sorted(fields_of_view):
             logging.debug("Reading data for FOV: %d", fov.get)
             image_fp: Path = image_paths[fov]

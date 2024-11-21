@@ -66,7 +66,7 @@ def test_extra_files_and_folders_are_ignored(tmp_path, wrap_path, example_folder
     ],
 )
 def test_any_missing_file_means_data_cannot_be_read(tmp_path, wrap_path, omit_spec):
-    assert [] == list(tmp_path.iterdir()), "Temp folder isn't empty!"
+    assert list(tmp_path.iterdir()) == [], "Temp folder isn't empty!"
     candidate_paths = list(omit_spec.folder.iterdir())
     num_omit = len(omit_spec.omissions)
     for p in candidate_paths:
