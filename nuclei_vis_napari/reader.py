@@ -27,7 +27,7 @@ Reader = Callable[[PathOrPaths], list[FullDataLayer]]
 
 @doc(
     summary=(
-        "This is the main hook required by napari / napari plugins to provide a Reader" " plugin."
+        "This is the main hook required by napari / napari plugins to provide a Reader plugin."
     ),
     parameters=dict(path="Path to the folder (with proper substructure) with nuclei data to view"),
     returns="A callable that accepts a list of paths and returns the layers for nuclei vis",
@@ -51,8 +51,7 @@ def get_reader(path: PathOrPaths) -> Optional[Reader]:  # noqa: D103
     # Each of the subpaths to parse must be extant folder.
     if not NucleiDataSubfolders.all_present_within(path):
         do_not_parse(
-            "At least one subpath to parse isn't a folder!"
-            f" {NucleiDataSubfolders.relpaths(path)}."
+            f"At least one subpath to parse isn't a folder! {NucleiDataSubfolders.relpaths(path)}."
         )
         return None
 

@@ -166,15 +166,12 @@ class NucleiVisualisationData:  # noqa: D101
             object.__setattr__(self, "masks", self.masks[0, 0, 0])
         if len(self.masks.shape) != 2:  # noqa: PLR2004
             raise ValueError(
-                f"Need 2D image for nuclear masks! Got {len(self.masks.shape)}:"
-                f" {self.masks.shape}"
+                f"Need 2D image for nuclear masks! Got {len(self.masks.shape)}: {self.masks.shape}"
             )
 
 
 @doc(
-    summary=(
-        "Read (from environment variable) the image channel in which to find nuclei" " signal."
-    ),
+    summary=("Read (from environment variable) the image channel in which to find nuclei signal."),
     raises=dict(
         ValueError="When the environment variable value's set to a non-integer-like",
     ),
@@ -198,7 +195,7 @@ def _determine_nuclei_channel() -> int:
 
 
 @doc(
-    summary=("Max project images z-stack along the z-axis, assumed to be axis 0 (first" " axis)."),
+    summary=("Max project images z-stack along the z-axis, assumed to be axis 0 (first axis)."),
     parameters=dict(img="The image stack to max-project along z"),
     raises=dict(ValueError="If the given image isn't 3D (z-stack of 2D images)"),
     returns="Array of 1 dimension less than input, reducing first dimension by taking maxima along it",

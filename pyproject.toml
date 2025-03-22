@@ -22,7 +22,7 @@ classifiers = [
     "Typing :: Typed",
 ]
 dependencies = [
-    "gertils @ git+https://github.com/gerlichlab/gertils.git@v0.5.1",
+    "gertils @ git+https://github.com/gerlichlab/gertils.git@v0.6.0",
     "importlib_resources; python_version < '3.11'",
     "napari >= 0.4.19; sys_platform == 'darwin'",
     "napari[all] >= 0.4.19; sys_platform != 'darwin'",
@@ -55,13 +55,13 @@ coverage = [
     "coverage >= 7.5.0",
 ]
 formatting = [
-    "ruff >= 0.3",
+    "ruff >= 0.11.2",
     "codespell >= 2.2.4",
 ]
 linting = [
     "mypy >= 1.0.1",
     "pandas-stubs",
-    "ruff >= 0.3",
+    "ruff >= 0.11.2",
 ]
 testsuite = [
     "hypothesis[numpy]",
@@ -127,8 +127,8 @@ ignore = [
     # Imports and type annotations
     "ANN003",  # Missing type annotation for kwargs
     "FA100",  # Missing `from __future__ import annotations`, but uses `typing.*`
-    "TCH002",  # Move third-party import `...` into a type-checking block
-    "TCH003",  # Move standard library import `...` into a type-checking block
+    "TC002",  # Move third-party import `...` into a type-checking block
+    "TC003",  # Move standard library import `...` into a type-checking block
     "UP007",  # Use `X | Y` for type annotations
 
     # Ruff recommends avoiding these checks when using `ruff format`. Since
@@ -154,6 +154,7 @@ ignore = [
     # Other
     "PLR0912",  # too many branches (of a conditional)
     "TD002",  # missing author in TODO
+    "LOG015", # Use own logger instead
 ]
 
 [tool.ruff.lint.per-file-ignores]
@@ -161,7 +162,6 @@ ignore = [
     # Ignore some groups of checks in our test code.
     "ANN",  # Type annotations
     "D10",  # Missing docstrings
-    "TCH00",  # Imports and type checking blocks
     "INP001", # File `...` is part of an implicit namespace package. Add an `__init__.py`.
 
     # Ignore some more specific checks in our test code.
