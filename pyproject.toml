@@ -55,13 +55,13 @@ coverage = [
     "coverage >= 7.5.0",
 ]
 formatting = [
-    "ruff >= 0.11.2",
     "codespell >= 2.2.4",
+    "ruff == 0.8.0", # https://github.com/astral-sh/ruff/issues/14681
 ]
 linting = [
     "mypy >= 1.0.1",
     "pandas-stubs",
-    "ruff >= 0.11.2",
+    "ruff == 0.8.0", # https://github.com/astral-sh/ruff/issues/14681
 ]
 testsuite = [
     "hypothesis[numpy]",
