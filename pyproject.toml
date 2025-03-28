@@ -56,12 +56,12 @@ coverage = [
 ]
 formatting = [
     "codespell >= 2.2.4",
-    "ruff == 0.8.0", # https://github.com/astral-sh/ruff/issues/14681
+    "ruff == 0.7.4", # https://github.com/astral-sh/ruff/issues/14681
 ]
 linting = [
     "mypy >= 1.0.1",
     "pandas-stubs",
-    "ruff == 0.8.0", # https://github.com/astral-sh/ruff/issues/14681
+    "ruff == 0.7.4", # https://github.com/astral-sh/ruff/issues/14681
 ]
 testsuite = [
     "hypothesis[numpy]",
@@ -127,8 +127,8 @@ ignore = [
     # Imports and type annotations
     "ANN003",  # Missing type annotation for kwargs
     "FA100",  # Missing `from __future__ import annotations`, but uses `typing.*`
-    "TC002",  # Move third-party import `...` into a type-checking block
-    "TC003",  # Move standard library import `...` into a type-checking block
+    "TCH002",  # Move third-party import `...` into a type-checking block
+    "TCH003",  # Move standard library import `...` into a type-checking block
     "UP007",  # Use `X | Y` for type annotations
 
     # Ruff recommends avoiding these checks when using `ruff format`. Since
