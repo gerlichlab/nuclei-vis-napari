@@ -22,8 +22,18 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
+      - name: Set up Poetry
+        uses: snok/install-poetry@v1    # v1.3.4 at time of adoption
+        with:
+          poetry-version: "1.7.1"
+      - uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/pypoetry/virtualenvs
+            ~/.cache/pytest
+          key: ${{ runner.os }}-poetry-tests-${{ hashFiles('poetry.lock') }}
       - name: Install project
-        run: python -Im pip install .[coverage,testsuite]
+        run: poetry sync --no-interaction --with coverage,testsuite
       - name: Test and measure coverage, on Python ${{ matrix.python-version }} on ${{ matrix.os }}
         run: coverage run --omit=tests/*.py --data-file=.coverage.$(echo ${{ matrix.python-version }} | tr -d .) -m pytest -vv
       - name: Upload coverage data
@@ -108,7 +118,17 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
+      - name: Set up Poetry
+        uses: snok/install-poetry@v1    # v1.3.4 at time of adoption
+        with:
+          poetry-version: "1.7.1"
+      - uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/pypoetry/virtualenvs
+            ~/.cache/pytest
+          key: ${{ runner.os }}-poetry-tests-${{ hashFiles('poetry.lock') }}
       - name: Install project
-        run: python -Im pip install .[testsuite]
+        run: poetry sync --no-interaction --with testsuite
       - name: Run unit tests on Python ${{ matrix.python-version }} on ${{ matrix.os }}
-        run: pytest -vv
+        run: poetry run pytest -vv

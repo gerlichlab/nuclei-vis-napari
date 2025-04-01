@@ -1,13 +1,11 @@
-[project]
+[tool.poetry]
 name = "nuclei-vis-napari"
-dynamic = ["version"]
-requires-python = ">= 3.10, < 3.13"
-authors = [
-    {name = "Vince Reuter"}
-]
+version = "0.1.8"
+authors = ["Vince Reuter"]
 description = "This project facilitates viewing nuclei and nuclear masks."
 readme = "README.md"
-license = {file = "LICENSE"}
+license = "MIT"
+repository = "https://github.com/gerlichlab/nuclei-vis-napari.git"
 keywords = ["visualisation", "bioinformatics", "napari", "nuclei"]
 classifiers = [
     "Development Status :: 1 - Planning",
@@ -21,54 +19,56 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Bio-Informatics",
     "Typing :: Typed",
 ]
-dependencies = [
-    "gertils @ git+https://github.com/gerlichlab/gertils.git@v0.6.0",
-    "importlib_resources; python_version < '3.11'",
-    "napari >= 0.4.19; sys_platform == 'darwin'",
-    "napari[all] >= 0.4.19; sys_platform != 'darwin'",
-    "numpy",
-    "numpydoc_decorator >= 2.2.1",
-    "pandas",
-    "pyqt6 >= 6.5.0; sys_platform == 'darwin'",
-    "zarr >= 2.4.12",
-]
 
 [build-system]
-# Use setuptools-scm to get package data properly included.
-# See: https://setuptools.pypa.io/en/latest/userguide/datafiles.html#configuration-options
-requires = ["setuptools", "setuptools-scm", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
 
-[project.urls]
-Homepage = "https://github.com/gerlichlab/nuclei-vis-napari"
-Repository = "https://github.com/gerlichlab/nuclei-vis-napari.git"
-Issues = "https://github.com/gerlichlab/nuclei-vis-napari/issues"
-
-[tool.setuptools.dynamic]
-version = { attr = "nuclei_vis_napari.__version__" }
-
-[project.entry-points."napari.manifest"]
+[tool.poetry.plugins."napari.manifest"]
 nuclei-vis-napari = "nuclei_vis_napari:napari.yaml"
 
-[project.optional-dependencies]
-coverage = [
-    "coverage >= 7.5.0",
-]
-formatting = [
-    "codespell >= 2.2.4",
-    "ruff == 0.7.4", # https://github.com/astral-sh/ruff/issues/14681
-]
-linting = [
-    "mypy >= 1.0.1",
-    "pandas-stubs",
-    "ruff == 0.7.4", # https://github.com/astral-sh/ruff/issues/14681
-]
-testsuite = [
-    "hypothesis[numpy]",
-    "npe2",
-    "pytest >= 7.1.0",
-    "typer",
-]
+[tool.poetry.dependencies]
+python = ">=3.10,<3.13"
+gertils = { git = "https://github.com/gerlichlab/gertils.git", tag = "v0.6.0" }
+importlib_resources = { version = "*", markers = "python_version < '3.11'" }
+numpy = "*"
+numpydoc_decorator = ">=2.2.1"
+pandas = "*"
+zarr = ">=2.4.12"
+
+# OS-specific dependency declarations
+napari = { version = "==0.4.19.post1", markers = "sys_platform == 'darwin'" }
+pyqt6 = { version = ">=6.5.0", markers = "sys_platform == 'darwin'" }
+
+[tool.poetry.group.coverage]
+optional = true
+
+[tool.poetry.group.coverage.dependencies]
+coverage = ">=7.5.0"
+
+[tool.poetry.group.formatting]
+optional = true
+
+[tool.poetry.group.formatting.dependencies]
+codespell = ">=2.2.4"
+ruff = "==0.7.4"  # https://github.com/astral-sh/ruff/issues/14681
+
+[tool.poetry.group.linting]
+optional = true
+
+[tool.poetry.group.linting.dependencies]
+mypy = ">=1.0.1"
+pandas-stubs = "*"
+ruff = "==0.7.4"  # https://github.com/astral-sh/ruff/issues/14681
+
+[tool.poetry.group.testsuite]
+optional = true
+
+[tool.poetry.group.testsuite.dependencies]
+hypothesis = { version = "*", extras = ["numpy"] }
+npe2 = "*"
+pytest = ">=7.1.0"
+typer = "*"
 
 [tool.codespell]
 skip = ".git,.mypy_cache,.nox,.vscode,__pycache__,poetry.lock,*.zarr"
@@ -169,4 +169,3 @@ ignore = [
     "N802",  # Function name `...` should be lowercase
     "S101",  # Use of `assert` detected
 ]
-

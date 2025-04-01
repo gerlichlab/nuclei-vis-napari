@@ -17,14 +17,24 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v3
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
+      - name: Set up Poetry
+        uses: snok/install-poetry@v1    # v1.3.4 at time of adoption
+        with:
+          poetry-version: "1.7.1"
+      - uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/pypoetry/virtualenvs
+            ~/.cache/pytest
+          key: ${{ runner.os }}-poetry-tests-${{ hashFiles('poetry.lock') }}
       - name: Install project
-        run: pip install .[formatting]
+        run: poetry sync --no-interaction --with formatting
       - name: Run codespell
-        run: codespell --enable-colors
+        run: poetry run codespell --enable-colors
       - name: Run ruff
-        run: ruff format --diff .
+        run: poetry run ruff format --diff .
