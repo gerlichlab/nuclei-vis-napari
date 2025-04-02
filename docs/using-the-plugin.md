@@ -4,9 +4,9 @@ First, check the general information about [installation and environment](./READ
 ### Quickstart
 To visualise the nuclear masks, you need to __drag-and-drop a folder__ into an active Napari window. 
 That folder must...
-* have `images` as the beginning of its name
+* have `images` as the beginning of its name (e.g., `images_all`)
 <a href="subfolders-structure"></a>
-* contain __three subfolders__:
+* contain __three subfolders__ (_note_: there may well be many _more_ contents, but the following three items _must_ be present):
     * `nuc_images`: images (2D), used as input to image segmentation to find nuclei
     * `nuc_masks`: "images" (2D), encoding the subregions of each image deemed to be nuclei. 0 a non-nuclear pixel while positive integer indicates membership of the pixel in a particular nucleus (corresponding to a `label` value in the corresponding points/labels file for the particular field of view in question).
     * `_nuclear_masks_visualisation`: table-like files (CSV), for now, with a `label` column indicating _which_ nucleus a record represents, and `yc` and `xc` columns giving y- and x-coordinates, respectively, for the centroid of a particular nuclear region.
