@@ -29,7 +29,7 @@ nuclei-vis-napari = "nuclei_vis_napari:napari.yaml"
 
 [tool.poetry.dependencies]
 python = ">=3.10,<3.13"
-gertils = { git = "https://github.com/gerlichlab/gertils.git", tag = "v0.6.0" }
+gertils = { git = "https://github.com/gerlichlab/gertils.git", tag = "v0.6.1" }
 importlib_resources = { version = "*", markers = "python_version < '3.11'" }
 numpy = "*"
 numpydoc_decorator = ">=2.2.1"

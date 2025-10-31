@@ -98,7 +98,7 @@ def build_layers(  # noqa: D103
         images.append(visdata.image)
         masks.append(visdata.masks)
         for nuc, pt in visdata.centers:
-            nuclei_points.append([i, pt.get_y_coordinate(), pt.get_x_coordinate()])
+            nuclei_points.append([i, pt.y, pt.x])
             nuclei_labels.append(nuc.get)
 
     # Prep the data for presentation as layers.
