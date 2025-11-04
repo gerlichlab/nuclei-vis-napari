@@ -1,6 +1,6 @@
 """A plugin for napari which allows visualisation of nuclei and nuclear regions"""
 
-__version__ = "0.1.8"
+__version__ = "0.1.9"
 
 import sys
 

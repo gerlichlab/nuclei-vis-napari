@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "nuclei-vis-napari"
-version = "0.1.8"
+version = "0.1.9"
 authors = ["Vince Reuter"]
 description = "This project facilitates viewing nuclei and nuclear masks."
 readme = "README.md"
