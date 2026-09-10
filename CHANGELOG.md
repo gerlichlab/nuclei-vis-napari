@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+* Read nuclei data as published by the `looptrace` pipeline: drop the `B03_NUCLEI_SEGMENTATION` folder of an analysis into Napari.
+
+### Changed
+* The nuclear masks visualisation subfolder may be named `nuclear_masks_visualisation` (as now published by `looptrace`) or `_nuclear_masks_visualisation` (older `looptrace`); the former is preferred when both are present.
+
 ## [v0.1.9] - 2025-11-04
 
 ### Changed

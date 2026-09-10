@@ -2,24 +2,28 @@
 First, check the general information about [installation and environment](./README.md#installation-and-environment).
 
 ### Quickstart
-To visualise the nuclear masks, you need to __drag-and-drop a folder__ into an active Napari window. 
-That folder must...
-* have `images` as the beginning of its name (e.g., `images_all`)
+To visualise the nuclear masks, you need to __drag-and-drop a folder__ into an active Napari window, and choose `nuclei-vis-napari` if Napari asks which plugin to use.
+
+For output of the `looptrace` pipeline, that folder is the nuclei segmentation block of the analysis you want to inspect:
+```
+[PATH_TO_EXPERIMENT]/Analysis_<NNN>_<timestamp>/B03_NUCLEI_SEGMENTATION/
+├── nuc_images/P0001.zarr ...
+├── nuc_masks/P0001.zarr ...
+└── nuclear_masks_visualisation/P0001.nuclear_masks.csv ...
+```
+Each analysis folder holds its own segmentation (with its own parameters), so drop the `B03_NUCLEI_SEGMENTATION` folder of the particular analysis you want to view.
+
+In general, the name of the folder to drop doesn't matter (e.g., `images_all`, as produced by older versions of `looptrace`, works too), but that folder must...
 <a href="subfolders-structure"></a>
 * contain __three subfolders__ (_note_: there may well be many _more_ contents, but the following three items _must_ be present):
     * `nuc_images`: images (2D), used as input to image segmentation to find nuclei
     * `nuc_masks`: "images" (2D), encoding the subregions of each image deemed to be nuclei. 0 a non-nuclear pixel while positive integer indicates membership of the pixel in a particular nucleus (corresponding to a `label` value in the corresponding points/labels file for the particular field of view in question).
-    * `_nuclear_masks_visualisation`: table-like files (CSV), for now, with a `label` column indicating _which_ nucleus a record represents, and `yc` and `xc` columns giving y- and x-coordinates, respectively, for the centroid of a particular nuclear region.
-
-These properties should be entirely or nearly satisfied by a run of `looptrace`. 
-At most, only these steps should be required to prepare the data:
-1. Copy the nuclear mask visualisation folder (with the points/labels file(s)) into a shared folder with the nuclei images and masks.
-1. Add an underscore as prefix to the name of the copy of the folder.
+    * `nuclear_masks_visualisation` (or `_nuclear_masks_visualisation`, as named by older versions of `looptrace`): table-like files (CSV), for now, with a `label` column indicating _which_ nucleus a record represents, and `yc` and `xc` columns giving y- and x-coordinates, respectively, for the centroid of a particular nuclear region. If both names are present, the one without the underscore is used.
 
 ### What you should see
 A Napari window with a single slider (corresponding to field of view) should result, with three layers with names along the lines of "images" or "max_z_projection", "masks", and "labels". 
 
-The fields of view displayed will be those for which all three files (image, masks, and points/labels) were present in the [three subfolders](#subfolders-structure). The `napari` slider is just a 0-based index, so fields of view are relabeled as a contiguous sequence of integers beginning from 0, regardless of how they were initially labeled. This is why it's generally advisable (and how should be done by `looptrace`) to have the same fields of view in each subfolder, numbered as a contiguous subinterval of the natural numbers.
+The fields of view displayed will be those for which all three files (image, masks, and points/labels) were present in the [three subfolders](#subfolders-structure). For example, a run restricted to a subset of fields of view (`selected_fovs`) may have more nuclei images than masks; only the fields of view with masks will be shown. The `napari` slider is just a 0-based index, so fields of view are relabeled as a contiguous sequence of integers beginning from 0, regardless of how they were initially labeled. This is why it's generally advisable (and how should be done by `looptrace`) to have the same fields of view in each subfolder, numbered as a contiguous subinterval of the natural numbers.
 
 ### Key point: dimensionality of nuclei images
 In most versions of the software, `looptrace` should give you `nuc_images` that are two-dimensional; this should work well out-of-the-box with this plugin.

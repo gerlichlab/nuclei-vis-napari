@@ -33,7 +33,7 @@ class NucleiDataSubfolders(Enum):
 
     IMAGES = "nuc_images"
     MASKS = "nuc_masks"
-    CENTERS = "_nuclear_masks_visualisation"
+    CENTERS = "nuclear_masks_visualisation"
 
     @classmethod
     def all_present_within(cls, p: PathLike) -> bool:
@@ -74,13 +74,23 @@ class NucleiDataSubfolders(Enum):
         """Give the path to each subfolder, relative to the given parent."""
         return {m.value: m.relpath(p) for m in cls}
 
+    @property
+    def names(self) -> tuple[str, ...]:
+        """The accepted names for this subfolder, in order of preference."""
+        # Older looptrace wrote the centers folder with an underscore prefix, into the images folder;
+        # the pipeline now publishes it without the prefix, in B03_NUCLEI_SEGMENTATION.
+        if self is NucleiDataSubfolders.CENTERS:
+            return (self.value, "_" + self.value)
+        return (self.value,)
+
     def is_present_within(self, p: PathLike) -> bool:
         """Determine whether this subfolder is directly within given folder."""
         return self.relpath(p).is_dir()
 
     def relpath(self, p: PathLike) -> Path:
         """Get the path of this subfolder, relative to the given parent."""
-        return Path(p) / self.value
+        candidates = [Path(p) / name for name in self.names]
+        return next((c for c in candidates if c.is_dir()), candidates[0])
 
 
 @doc(
