@@ -14,6 +14,7 @@ still green.
 
 from pathlib import Path
 
+import npe2
 import pytest
 
 from nuclei_vis_napari import get_package_examples_folder
@@ -24,12 +25,7 @@ MANIFEST = Path(__file__).resolve().parents[1] / "nuclei_vis_napari" / "napari.y
 
 @pytest.fixture
 def plugin_manager():
-    """A manager with just this plugin's manifest registered.
-
-    npe2 arrives with napari, which this project declares only for macOS, so the
-    dispatch is checked where it can be and skipped where napari is absent.
-    """
-    npe2 = pytest.importorskip("npe2")
+    """A manager with just this plugin's manifest registered."""
     pm = npe2.PluginManager()
     pm.register(npe2.PluginManifest.from_file(MANIFEST))
     return pm
