@@ -8,7 +8,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from nuclei_vis_napari import get_package_examples_folder
+from nuclei_vis_napari import data_bundles, get_package_examples_folder
 from nuclei_vis_napari.data_bundles import NucleiDataSubfolders
 from nuclei_vis_napari.reader import get_reader
 
@@ -122,7 +122,56 @@ def test_two_names_for_one_field_of_view_is_declined_not_raised(
     shutil.copytree(original, images / "P1.zarr")
     with caplog.at_level(logging.DEBUG):
         assert get_reader(wrap_path(pipeline_example)) is None
-    assert "Cannot resolve fields of view" in caplog.text
+    assert "Cannot examine the contents of" in caplog.text
+    assert "already seen in folder" in caplog.text
+    assert any(r.levelno == logging.WARNING for r in caplog.records)
+
+
+def test_an_unreadable_subfolder_is_declined_not_raised(
+    pipeline_example, caplog, wrap_path, monkeypatch
+):
+    """A subfolder that exists but will not be listed is a decline, too.
+
+    On the group share this is likelier than a duplicated field of view: mixed
+    ownership under an analysis folder, or a stale NFS handle on a flaky mount.
+    `is_dir` succeeds -- it only stats -- and the listing then fails, so the
+    eager field-of-view check turned a parse-time error into a selection-time
+    crash when this branch introduced it.
+
+    Injected rather than produced with `chmod(0o000)`, which does nothing useful
+    on Windows and silently stops working as root, so a permissions-based test
+    would pass vacuously on the runners likeliest to differ from a laptop.
+    """
+
+    def refuse_to_list(folder, *, extension):  # noqa: ARG001
+        raise PermissionError(13, "Permission denied", str(folder))
+
+    monkeypatch.setattr(data_bundles, "find_single_path_by_fov", refuse_to_list)
+    with caplog.at_level(logging.DEBUG):
+        assert get_reader(wrap_path(pipeline_example)) is None
+    assert "Cannot examine the contents of" in caplog.text
+    assert "Permission denied" in caplog.text
+
+
+def test_an_untraversable_folder_is_declined_not_raised(
+    pipeline_example, caplog, wrap_path, monkeypatch
+):
+    """The same refusal from one step earlier, before anything is listed.
+
+    `pathlib` does not swallow EACCES -- `_ignore_error` covers ENOENT, ENOTDIR,
+    EBADF and ELOOP -- so `is_dir` RE-RAISES it rather than reporting "not a
+    directory". A dropped folder that is readable but not traversable therefore
+    throws while merely checking which subfolders exist, which is why the guard
+    wraps the whole check and not just the listing.
+    """
+
+    def refuse_to_stat(self, p):  # noqa: ARG001
+        raise PermissionError(13, "Permission denied", str(p))
+
+    monkeypatch.setattr(NucleiDataSubfolders, "is_present_within", refuse_to_stat)
+    with caplog.at_level(logging.DEBUG):
+        assert get_reader(wrap_path(pipeline_example)) is None
+    assert "Cannot examine the contents of" in caplog.text
 
 
 def test_a_folder_predating_published_images_says_so(pipeline_example, caplog, wrap_path):

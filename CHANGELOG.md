@@ -17,7 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * A folder is scanned once during reader selection rather than four times: the per-field-of-view listing is computed once and both the usability check and its failure message are derived from it.
 
 ### Fixed
-* `get_reader` declines a folder whose filenames give two names to one field of view (`P1.zarr` beside `P0001.zarr`, both parsing to 1) instead of raising out of reader selection, where an exception is a crash in napari rather than a decline that lets another plugin take the drop.
+* `get_reader` declines, rather than raising, when the folder cannot be examined -- an exception during napari's reader selection is a crash rather than a decline that lets another plugin take the drop. Two cases: filenames giving two names to one field of view (`P1.zarr` beside `P0001.zarr`, both parsing to 1), and a folder the filesystem will not describe, whether a subfolder that exists but cannot be listed or a stale handle on a network mount. The second was reachable before this release too, at parse time.
+* A folder that has all three subfolders but still cannot be read is refused at WARNING rather than DEBUG. Such a folder is almost certainly the one that was meant, and napari reports only "no reader available", which hid a cause the user could act on. Refusals of folders that are not nuclei data at all stay silent, since every plugin is asked about every drop.
 
 ### Removed
 * `NucleiDataSubfolders.relpaths` and `NucleiDataSubfolders.all_present_within`, both without callers once a refusal stopped listing all three subfolders.
