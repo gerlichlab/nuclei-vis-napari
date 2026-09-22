@@ -17,12 +17,18 @@ PIPELINE_FOLDER_NAME = "B03_NUCLEI_SEGMENTATION"
 
 @pytest.fixture
 def pipeline_example(tmp_path) -> Path:
-    """Rearrange the bundled example the way looptrace's nuclei segmentation block publishes it."""
+    """Rearrange the bundled example the way looptrace's nuclei segmentation block publishes it.
+
+    `nuc_images/` is a plain directory of per-field-of-view stores, which is what
+    the pipeline writes: checked against four published analysis folders,
+    including the first produced by the code that added this output. It is NOT a
+    zarr group and carries no `.zgroup`; a fixture that wrote one would be
+    testing a layout the pipeline does not produce, and would keep passing if the
+    reader came to depend on group metadata that real data lacks.
+    """
     root = tmp_path / PIPELINE_FOLDER_NAME
     shutil.copytree(LEGACY_EXAMPLE, root)
     (root / "_nuclear_masks_visualisation").rename(root / "nuclear_masks_visualisation")
-    # The published images folder is a zarr group, so it carries a .zgroup beside the per-FOV arrays.
-    (root / "nuc_images" / ".zgroup").write_text(json.dumps({"zarr_format": 2}))
     return root
 
 
@@ -58,3 +64,20 @@ def test_unprefixed_centers_folder_is_preferred_when_both_are_present(pipeline_e
         NucleiDataSubfolders.CENTERS.relpath(pipeline_example)
         == pipeline_example / "nuclear_masks_visualisation"
     )
+
+
+def test_a_stray_non_fov_entry_in_the_images_folder_is_ignored(pipeline_example, wrap_path):
+    """Whatever else sits beside the per-FOV stores must not stop the read.
+
+    Nothing guarantees the published folder holds only `<fov>.zarr` entries --
+    zarr tooling writes group metadata, filesystems leave `.DS_Store`, a reader
+    may drop a cache file. Discovery selects by parsing a field of view out of
+    each name, so anything unparseable is skipped; this pins that, rather than
+    leaving it to be rediscovered by whoever first sees a folder with a stray
+    file in it.
+    """
+    (pipeline_example / "nuc_images" / ".zgroup").write_text(
+        json.dumps({"zarr_format": 2})
+    )
+    (pipeline_example / "nuc_images" / ".DS_Store").write_bytes(b"\x00")
+    assert callable(get_reader(wrap_path(pipeline_example)))
