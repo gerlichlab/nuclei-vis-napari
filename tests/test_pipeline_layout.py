@@ -1,6 +1,7 @@
 """Tests for reading nuclei data as published by the looptrace pipeline (B03_NUCLEI_SEGMENTATION)"""
 
 import json
+import logging
 import shutil
 from pathlib import Path
 
@@ -81,3 +82,20 @@ def test_a_stray_non_fov_entry_in_the_images_folder_is_ignored(pipeline_example,
     )
     (pipeline_example / "nuc_images" / ".DS_Store").write_bytes(b"\x00")
     assert callable(get_reader(wrap_path(pipeline_example)))
+
+
+def test_a_folder_predating_published_images_says_so(pipeline_example, caplog, wrap_path):
+    """The commonest refusal for a while, so it should name its own cause.
+
+    Every analysis folder produced before looptrace published `nuc_images` looks
+    exactly like this: two correct subfolders and one absent. Listing all three
+    expected paths made that read like a malformed folder rather than an old one,
+    and said nothing about the way out -- which is to resume the run, since B03's
+    cached task output republishes without recomputation.
+    """
+    shutil.rmtree(pipeline_example / "nuc_images")
+    with caplog.at_level(logging.DEBUG):
+        assert get_reader(wrap_path(pipeline_example)) is None
+    assert "Not a folder: nuc_images" in caplog.text
+    assert "resuming the run republishes it" in caplog.text
+    assert "nuc_masks" not in caplog.text.split("cannot read")[0].split("looptrace")[0]

@@ -4,13 +4,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [v0.2.0] - 2026-09-22
 
 ### Added
 * Read nuclei data as published by the `looptrace` pipeline: drop the `B03_NUCLEI_SEGMENTATION` folder of an analysis into Napari.
 
 ### Changed
 * The nuclear masks visualisation subfolder may be named `nuclear_masks_visualisation` (as now published by `looptrace`) or `_nuclear_masks_visualisation` (older `looptrace`); the former is preferred when both are present.
+* A folder is read only when all three subfolders describe at least one field of view IN COMMON. Previously the three had merely to exist, so a folder whose subfolders covered different fields of view -- a run restricted with `selected_fovs`, or subfolders assembled by hand from different analyses -- was accepted and then failed inside `numpy.stack` on an empty list, naming neither fields of view nor the folder. It is now declined, with the data-file count per subfolder.
+* A refusal names the subfolder that is missing rather than listing all three, and says so when it is `nuc_images`: for a while the common case will be an analysis folder produced before `looptrace` published that output, where everything else is present and correct.
 
 ## [v0.1.9] - 2025-11-04
 

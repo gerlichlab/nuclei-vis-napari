@@ -11,6 +11,7 @@ import pytest
 from hypothesis import strategies as st
 
 from nuclei_vis_napari import list_package_example_folders
+from nuclei_vis_napari.data_bundles import NucleiDataSubfolders
 from nuclei_vis_napari.reader import get_reader
 
 EXAMPLE_FOLDERS = list_package_example_folders()
@@ -93,9 +94,14 @@ def test_required_elements_cannot_be_read_individually(example_path, wrap_path, 
         read_data = get_reader(arg)
     assert read_data is None
     obs_msg = list(caplog.records)[-1].message
-    # Given subfolder will have been interpreted as main folder.
-    exp_msg = "At least one subpath to parse isn't a folder!"
-    assert obs_msg.startswith(exp_msg)
+    # Given subfolder will have been interpreted as main folder, so all three of
+    # the subfolders it should itself contain are missing. The message names
+    # them rather than dumping every expected path, so that the far commoner
+    # case -- one missing subfolder in an otherwise correct folder -- reads as
+    # what it is.
+    assert obs_msg.startswith("Not a folder: ")
+    for member in NucleiDataSubfolders:
+        assert member.value in obs_msg
 
 
 @pytest.mark.parametrize("example_paths", [list(folder.iterdir()) for folder in EXAMPLE_FOLDERS])

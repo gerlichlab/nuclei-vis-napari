@@ -49,10 +49,25 @@ def get_reader(path: PathOrPaths) -> Optional[Reader]:  # noqa: D103
     path: Path = Path(path)  # type: ignore[no-redef]
 
     # Each of the subpaths to parse must be extant folder.
-    if not NucleiDataSubfolders.all_present_within(path):
-        do_not_parse(
-            f"At least one subpath to parse isn't a folder! {NucleiDataSubfolders.relpaths(path)}."
-        )
+    missing = [
+        member.value
+        for member in NucleiDataSubfolders
+        if not member.is_present_within(path)
+    ]
+    if missing:
+        # Name what is missing, not all three: for a while the common case will
+        # be an analysis folder produced before looptrace published nuc_images,
+        # where every other subfolder is present and correct. Listing all three
+        # made that read like a malformed folder rather than an old one.
+        why = f"Not a folder: {', '.join(missing)}, under {path}."
+        if NucleiDataSubfolders.IMAGES.value in missing:
+            why += (
+                f" If this is a looptrace analysis folder,"
+                f" {NucleiDataSubfolders.IMAGES.value} is published only by newer"
+                " versions of the pipeline; resuming the run republishes it from"
+                " cached task output, or use an analysis from a newer run."
+            )
+        do_not_parse(why)
         return None
 
     # ...and they must describe at least one field of view IN COMMON. Checked
