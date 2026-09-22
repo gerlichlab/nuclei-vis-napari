@@ -49,12 +49,8 @@ class NucleiDataSubfolders(Enum):
         ``get_reader`` to consult before it claims it can read a folder.
         """
         return {
-            cls.IMAGES.value: find_single_path_by_fov(
-                cls.IMAGES.relpath(p), extension=".zarr"
-            ),
-            cls.MASKS.value: find_single_path_by_fov(
-                cls.MASKS.relpath(p), extension=".zarr"
-            ),
+            cls.IMAGES.value: find_single_path_by_fov(cls.IMAGES.relpath(p), extension=".zarr"),
+            cls.MASKS.value: find_single_path_by_fov(cls.MASKS.relpath(p), extension=".zarr"),
             cls.CENTERS.value: find_single_path_by_fov(
                 cls.CENTERS.relpath(p), extension=".nuclear_masks.csv"
             ),
@@ -100,11 +96,6 @@ class NucleiDataSubfolders(Enum):
             bundles[fov] = NucleiVisualisationData(image=image, masks=masks, centers=centers)
         return bundles
 
-    @classmethod
-    def relpaths(cls, p: PathLike) -> dict[str, Path]:
-        """Give the path to each subfolder, relative to the given parent."""
-        return {m.value: m.relpath(p) for m in cls}
-
     @property
     def names(self) -> tuple[str, ...]:
         """The accepted names for this subfolder, in order of preference."""
@@ -119,7 +110,14 @@ class NucleiDataSubfolders(Enum):
         return self.relpath(p).is_dir()
 
     def relpath(self, p: PathLike) -> Path:
-        """Get the path of this subfolder, relative to the given parent."""
+        """Give this subfolder's path within the given parent -- the one that EXISTS, where more than one name is accepted.
+
+        Not a pure join: the centers folder has two accepted spellings, so which
+        path is correct is a question about the filesystem, and this probes it.
+        When none of the accepted names is present -- which is the case worth
+        reporting on -- the preferred spelling is returned, so the caller has a
+        path to name in its message even though nothing is there.
+        """
         candidates = [Path(p) / name for name in self.names]
         return next((c for c in candidates if c.is_dir()), candidates[0])
 

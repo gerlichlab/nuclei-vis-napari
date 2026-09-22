@@ -14,6 +14,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * A folder is read only when all three subfolders describe at least one field of view IN COMMON. Previously the three had merely to exist, so a folder whose subfolders covered different fields of view -- a run restricted with `selected_fovs`, or subfolders assembled by hand from different analyses -- was accepted and then failed inside `numpy.stack` on an empty list, naming neither fields of view nor the folder. It is now declined, with the data-file count per subfolder.
 * A refusal names the subfolder that is missing rather than listing all three, and says so when it is `nuc_images`: for a while the common case will be an analysis folder produced before `looptrace` published that output, where everything else is present and correct.
 
+### Internal
+Nothing a user sees changes here; these keep the reader's contract from being broken by accident.
+* Napari's routing of a dropped folder to this reader is now tested through `npe2`'s own dispatch, not just by calling `get_reader` directly. That routing is what makes the documented promise true -- the folder's NAME does not matter -- and it rests on `accepts_directories`, which no test previously exercised.
+* Said in `napari.yaml` why `filename_patterns` is vestigial for this plugin and must not be widened to `'*'`: npe2 does not consult it for a directory path, and `'*'` would offer this plugin for every file dropped into napari, only for `get_reader` to decline it.
+* `NucleiDataSubfolders.relpaths` removed; its only caller disappeared when the refusal message stopped listing all three subfolders. `relpath` now documents that it probes the filesystem rather than joining a path, since the centers subfolder has two accepted spellings.
+
 ## [v0.1.9] - 2025-11-04
 
 ### Changed

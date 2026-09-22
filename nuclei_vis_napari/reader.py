@@ -50,9 +50,7 @@ def get_reader(path: PathOrPaths) -> Optional[Reader]:  # noqa: D103
 
     # Each of the subpaths to parse must be extant folder.
     missing = [
-        member.value
-        for member in NucleiDataSubfolders
-        if not member.is_present_within(path)
+        member.value for member in NucleiDataSubfolders if not member.is_present_within(path)
     ]
     if missing:
         # Name what is missing, not all three: for a while the common case will
@@ -75,9 +73,7 @@ def get_reader(path: PathOrPaths) -> Optional[Reader]:  # noqa: D103
     # that the folder can be read: without this, napari accepted the drop and
     # then died in np.stack on an empty list, which names nothing the user can
     # act on. Filenames only, so this costs a directory listing, not an array.
-    counts = {
-        name: len(paths) for name, paths in NucleiDataSubfolders.paths_by_fov(path).items()
-    }
+    counts = {name: len(paths) for name, paths in NucleiDataSubfolders.paths_by_fov(path).items()}
     if not NucleiDataSubfolders.shared_fields_of_view(path):
         do_not_parse(
             "No field of view is present in all three subfolders, so there is"

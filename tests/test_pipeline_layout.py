@@ -77,9 +77,7 @@ def test_a_stray_non_fov_entry_in_the_images_folder_is_ignored(pipeline_example,
     leaving it to be rediscovered by whoever first sees a folder with a stray
     file in it.
     """
-    (pipeline_example / "nuc_images" / ".zgroup").write_text(
-        json.dumps({"zarr_format": 2})
-    )
+    (pipeline_example / "nuc_images" / ".zgroup").write_text(json.dumps({"zarr_format": 2}))
     (pipeline_example / "nuc_images" / ".DS_Store").write_bytes(b"\x00")
     assert callable(get_reader(wrap_path(pipeline_example)))
 
