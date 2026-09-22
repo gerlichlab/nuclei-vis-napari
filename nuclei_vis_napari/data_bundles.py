@@ -2,6 +2,7 @@
 
 import logging
 import os
+from collections.abc import Mapping
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
@@ -33,24 +34,49 @@ class NucleiDataSubfolders(Enum):
 
     IMAGES = "nuc_images"
     MASKS = "nuc_masks"
-    CENTERS = "_nuclear_masks_visualisation"
+    CENTERS = "nuclear_masks_visualisation"
 
     @classmethod
-    def all_present_within(cls, p: PathLike) -> bool:
-        """Determine whether all subfolders are present directly in given folder."""
-        return all(m.is_present_within(p) for m in cls)
+    def paths_by_fov(cls, p: PathLike) -> dict[str, dict[FieldOfViewFrom1, Path]]:
+        """Per subfolder, the data file for each field of view found in it.
+
+        Filenames only: no array is opened, so this is cheap enough for
+        ``get_reader`` to consult before it claims it can read a folder.
+        """
+        return {
+            cls.IMAGES.value: find_single_path_by_fov(cls.IMAGES.relpath(p), extension=".zarr"),
+            cls.MASKS.value: find_single_path_by_fov(cls.MASKS.relpath(p), extension=".zarr"),
+            cls.CENTERS.value: find_single_path_by_fov(
+                cls.CENTERS.relpath(p), extension=".nuclear_masks.csv"
+            ),
+        }
+
+    @staticmethod
+    def shared_fields_of_view(
+        by_fov: Mapping[str, Mapping[FieldOfViewFrom1, Path]],
+    ) -> set[FieldOfViewFrom1]:
+        """The fields of view for which ALL THREE subfolders have data.
+
+        A field of view present in only some of them cannot be displayed -- the
+        image, the mask and the centroids are one layer stack -- so the usable
+        set is the intersection, and it can be empty even when all three folders
+        exist and are full. That happens whenever the folders describe different
+        subsets: a run restricted with `selected_fovs`, or three folders
+        assembled by hand from different analyses.
+
+        Takes the result of ``paths_by_fov`` rather than a path, so that a caller
+        needing both it and the per-subfolder counts pays for one scan, not two.
+        """
+        return set.intersection(*(set(paths) for paths in by_fov.values()))
 
     @classmethod
     def read_all_from_root(cls, p: PathLike) -> dict[FieldOfViewFrom1, "NucleiVisualisationData"]:
         """For each field of view in the given folder, deter,ome the nuclei data paths."""
-        image_paths = find_single_path_by_fov(cls.IMAGES.relpath(p), extension=".zarr")
-        masks_paths = find_single_path_by_fov(cls.MASKS.relpath(p), extension=".zarr")
-        centers_paths = find_single_path_by_fov(
-            cls.CENTERS.relpath(p), extension=".nuclear_masks.csv"
-        )
-        fields_of_view = (
-            set(image_paths.keys()) & set(masks_paths.keys()) & set(centers_paths.keys())
-        )
+        by_fov = cls.paths_by_fov(p)
+        image_paths = by_fov[cls.IMAGES.value]
+        masks_paths = by_fov[cls.MASKS.value]
+        centers_paths = by_fov[cls.CENTERS.value]
+        fields_of_view = cls.shared_fields_of_view(by_fov)
         logging.debug("Image paths count: %d", len(image_paths))
         logging.debug("Masks paths count: %d", len(masks_paths))
         logging.debug("Centers paths count: %d", len(centers_paths))
@@ -69,18 +95,30 @@ class NucleiDataSubfolders(Enum):
             bundles[fov] = NucleiVisualisationData(image=image, masks=masks, centers=centers)
         return bundles
 
-    @classmethod
-    def relpaths(cls, p: PathLike) -> dict[str, Path]:
-        """Give the path to each subfolder, relative to the given parent."""
-        return {m.value: m.relpath(p) for m in cls}
+    @property
+    def names(self) -> tuple[str, ...]:
+        """The accepted names for this subfolder, in order of preference."""
+        # Older looptrace wrote the centers folder with an underscore prefix, into the images folder;
+        # the pipeline now publishes it without the prefix, in B03_NUCLEI_SEGMENTATION.
+        if self is NucleiDataSubfolders.CENTERS:
+            return (self.value, "_" + self.value)
+        return (self.value,)
 
     def is_present_within(self, p: PathLike) -> bool:
         """Determine whether this subfolder is directly within given folder."""
         return self.relpath(p).is_dir()
 
     def relpath(self, p: PathLike) -> Path:
-        """Get the path of this subfolder, relative to the given parent."""
-        return Path(p) / self.value
+        """Give this subfolder's path within the given parent -- the one that EXISTS, where more than one name is accepted.
+
+        Not a pure join: the centers folder has two accepted spellings, so which
+        path is correct is a question about the filesystem, and this probes it.
+        When none of the accepted names is present -- which is the case worth
+        reporting on -- the preferred spelling is returned, so the caller has a
+        path to name in its message even though nothing is there.
+        """
+        candidates = [Path(p) / name for name in self.names]
+        return next((c for c in candidates if c.is_dir()), candidates[0])
 
 
 @doc(

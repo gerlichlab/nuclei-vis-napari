@@ -6,6 +6,13 @@ contributions:
     python_name: nuclei_vis_napari.reader:get_reader
   readers:
   - command: nuclei-vis-napari.read_nuclei
+    # VESTIGIAL, and deliberately left narrow. This reader accepts only
+    # directories, and npe2 does not consult filename_patterns for a directory
+    # path: a reader declaring accepts_directories is indexed under an empty
+    # pattern, and directory dispatch yields exactly those. So this line gates
+    # nothing today. Widening it to '*' would not make it honest -- it would
+    # offer this plugin for every FILE dropped into napari, which get_reader
+    # then declines, putting a useless entry in the reader-choice dialog.
     filename_patterns:
     - 'images*'
     accepts_directories: true
