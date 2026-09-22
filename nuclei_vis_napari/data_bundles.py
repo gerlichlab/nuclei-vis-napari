@@ -2,6 +2,7 @@
 
 import logging
 import os
+from collections.abc import Mapping
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
@@ -36,12 +37,6 @@ class NucleiDataSubfolders(Enum):
     CENTERS = "nuclear_masks_visualisation"
 
     @classmethod
-    def all_present_within(cls, p: PathLike) -> bool:
-        """Determine whether all subfolders are present directly in given folder."""
-        return all(m.is_present_within(p) for m in cls)
-
-    @classmethod
-    @classmethod
     def paths_by_fov(cls, p: PathLike) -> dict[str, dict[FieldOfViewFrom1, Path]]:
         """Per subfolder, the data file for each field of view found in it.
 
@@ -56,8 +51,10 @@ class NucleiDataSubfolders(Enum):
             ),
         }
 
-    @classmethod
-    def shared_fields_of_view(cls, p: PathLike) -> set[FieldOfViewFrom1]:
+    @staticmethod
+    def shared_fields_of_view(
+        by_fov: Mapping[str, Mapping[FieldOfViewFrom1, Path]],
+    ) -> set[FieldOfViewFrom1]:
         """The fields of view for which ALL THREE subfolders have data.
 
         A field of view present in only some of them cannot be displayed -- the
@@ -66,8 +63,10 @@ class NucleiDataSubfolders(Enum):
         exist and are full. That happens whenever the folders describe different
         subsets: a run restricted with `selected_fovs`, or three folders
         assembled by hand from different analyses.
+
+        Takes the result of ``paths_by_fov`` rather than a path, so that a caller
+        needing both it and the per-subfolder counts pays for one scan, not two.
         """
-        by_fov = cls.paths_by_fov(p)
         return set.intersection(*(set(paths) for paths in by_fov.values()))
 
     @classmethod
@@ -77,7 +76,7 @@ class NucleiDataSubfolders(Enum):
         image_paths = by_fov[cls.IMAGES.value]
         masks_paths = by_fov[cls.MASKS.value]
         centers_paths = by_fov[cls.CENTERS.value]
-        fields_of_view = cls.shared_fields_of_view(p)
+        fields_of_view = cls.shared_fields_of_view(by_fov)
         logging.debug("Image paths count: %d", len(image_paths))
         logging.debug("Masks paths count: %d", len(masks_paths))
         logging.debug("Centers paths count: %d", len(centers_paths))

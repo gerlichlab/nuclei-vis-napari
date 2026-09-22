@@ -25,6 +25,56 @@ FullDataLayer = ImageLayer | MasksLayer | CentroidsLayer
 Reader = Callable[[PathOrPaths], list[FullDataLayer]]
 
 
+def _why_not_readable(path: Path) -> Optional[str]:
+    """Why this folder cannot be read, or None if it can.
+
+    Kept out of ``get_reader`` so each refusal is one return of a message rather
+    than a log-and-return pair, and so the folder rules can be read -- and
+    tested -- without napari's reader protocol in the way.
+    """
+    # Each of the subpaths to parse must be an extant folder.
+    missing = [
+        member.value for member in NucleiDataSubfolders if not member.is_present_within(path)
+    ]
+    if missing:
+        # Name what is missing, not all three: for a while the common case will
+        # be an analysis folder produced before looptrace published nuc_images,
+        # where every other subfolder is present and correct. Listing all three
+        # made that read like a malformed folder rather than an old one.
+        why = f"Not a folder: {', '.join(missing)}, under {path}"
+        if NucleiDataSubfolders.IMAGES.value in missing:
+            why += (
+                f". If this is a looptrace analysis folder,"
+                f" {NucleiDataSubfolders.IMAGES.value} is published only by newer"
+                " versions of the pipeline; resuming the run republishes it from"
+                " cached task output, or use an analysis from a newer run"
+            )
+        return why
+
+    # ...and they must describe at least one field of view IN COMMON. Checked
+    # here rather than left to the parse, because returning a reader is a claim
+    # that the folder can be read: without this, napari accepted the drop and
+    # then died in np.stack on an empty list, which names nothing the user can
+    # act on. Filenames only, so this costs one listing per subfolder and opens
+    # no array; the result is reused for the check and for its message.
+    try:
+        by_fov = NucleiDataSubfolders.paths_by_fov(path)
+    except RuntimeError as e:
+        # The other half of that claim: declining must not THROW. This runs
+        # during napari's reader selection, where an exception is a crash rather
+        # than a decline. Discovery raises when two filenames parse to the same
+        # field of view -- P1.zarr beside P0001.zarr, since both parse to 1 --
+        # which is a folder we cannot read, not a bug to propagate.
+        return f"Cannot resolve fields of view under {path}: {e}"
+    if not NucleiDataSubfolders.shared_fields_of_view(by_fov):
+        counts = {name: len(paths) for name, paths in by_fov.items()}
+        return (
+            "No field of view is present in all three subfolders, so there is"
+            f" nothing to display; data files found per subfolder: {counts}"
+        )
+    return None
+
+
 @doc(
     summary=(
         "This is the main hook required by napari / napari plugins to provide a Reader plugin."
@@ -48,37 +98,9 @@ def get_reader(path: PathOrPaths) -> Optional[Reader]:  # noqa: D103
         return None
     path: Path = Path(path)  # type: ignore[no-redef]
 
-    # Each of the subpaths to parse must be extant folder.
-    missing = [
-        member.value for member in NucleiDataSubfolders if not member.is_present_within(path)
-    ]
-    if missing:
-        # Name what is missing, not all three: for a while the common case will
-        # be an analysis folder produced before looptrace published nuc_images,
-        # where every other subfolder is present and correct. Listing all three
-        # made that read like a malformed folder rather than an old one.
-        why = f"Not a folder: {', '.join(missing)}, under {path}."
-        if NucleiDataSubfolders.IMAGES.value in missing:
-            why += (
-                f" If this is a looptrace analysis folder,"
-                f" {NucleiDataSubfolders.IMAGES.value} is published only by newer"
-                " versions of the pipeline; resuming the run republishes it from"
-                " cached task output, or use an analysis from a newer run."
-            )
-        do_not_parse(why)
-        return None
-
-    # ...and they must describe at least one field of view IN COMMON. Checked
-    # here rather than left to the parse, because returning a reader is a claim
-    # that the folder can be read: without this, napari accepted the drop and
-    # then died in np.stack on an empty list, which names nothing the user can
-    # act on. Filenames only, so this costs a directory listing, not an array.
-    counts = {name: len(paths) for name, paths in NucleiDataSubfolders.paths_by_fov(path).items()}
-    if not NucleiDataSubfolders.shared_fields_of_view(path):
-        do_not_parse(
-            "No field of view is present in all three subfolders, so there is"
-            f" nothing to display; data files found per subfolder: {counts}"
-        )
+    why_not = _why_not_readable(path)  # type: ignore[arg-type]
+    if why_not is not None:
+        do_not_parse(why_not)
         return None
 
     def parse(root: PathOrPaths) -> list[FullDataLayer]:

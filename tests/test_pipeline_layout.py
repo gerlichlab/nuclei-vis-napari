@@ -57,14 +57,37 @@ def test_pipeline_layout_missing_subfolder_means_data_cannot_be_read(pipeline_ex
 
 
 def test_unprefixed_centers_folder_is_preferred_when_both_are_present(pipeline_example):
-    shutil.copytree(
-        pipeline_example / "nuclear_masks_visualisation",
-        pipeline_example / "_nuclear_masks_visualisation",
-    )
+    """Which folder wins is only interesting if the centroids drawn differ.
+
+    Asserting on `relpath` alone would keep passing if the read stopped
+    consulting it. So the centroids are read first, with only the unprefixed
+    folder present; then a legacy folder is added carrying DIFFERENT centroids,
+    and the read must be unchanged. Shifting y by 500 makes a wrong choice
+    impossible to miss, rather than a rounding difference.
+    """
+
+    def centroids() -> list[tuple[float, float]]:
+        *_, (points, _, _) = get_reader(pipeline_example)(pipeline_example)  # type: ignore[misc]
+        return [(y, x) for _, y, x in points]
+
+    expected = centroids()
+    assert expected, "No centroid was read at all; the test would prove nothing"
+
+    legacy = pipeline_example / "_nuclear_masks_visualisation"
+    shutil.copytree(pipeline_example / "nuclear_masks_visualisation", legacy)
+    for csv_path in legacy.glob("*.nuclear_masks.csv"):
+        header, *body = csv_path.read_text().splitlines()
+        shifted = []
+        for row in body:
+            index, label, yc, xc, *rest = row.split(",")
+            shifted.append(",".join([index, label, str(float(yc) + 500), xc, *rest]))
+        csv_path.write_text("\n".join([header, *shifted]) + "\n")
+
     assert (
         NucleiDataSubfolders.CENTERS.relpath(pipeline_example)
         == pipeline_example / "nuclear_masks_visualisation"
     )
+    assert centroids() == expected
 
 
 def test_a_stray_non_fov_entry_in_the_images_folder_is_ignored(pipeline_example, wrap_path):
@@ -73,13 +96,33 @@ def test_a_stray_non_fov_entry_in_the_images_folder_is_ignored(pipeline_example,
     Nothing guarantees the published folder holds only `<fov>.zarr` entries --
     zarr tooling writes group metadata, filesystems leave `.DS_Store`, a reader
     may drop a cache file. Discovery selects by parsing a field of view out of
-    each name, so anything unparseable is skipped; this pins that, rather than
+    each name, so anything unparsable is skipped; this pins that, rather than
     leaving it to be rediscovered by whoever first sees a folder with a stray
     file in it.
     """
     (pipeline_example / "nuc_images" / ".zgroup").write_text(json.dumps({"zarr_format": 2}))
     (pipeline_example / "nuc_images" / ".DS_Store").write_bytes(b"\x00")
     assert callable(get_reader(wrap_path(pipeline_example)))
+
+
+def test_two_names_for_one_field_of_view_is_declined_not_raised(
+    pipeline_example, caplog, wrap_path
+):
+    """Declining must not THROW, whatever the folder holds.
+
+    `get_reader` runs during napari's reader SELECTION, so an exception there is
+    a crash in the GUI rather than a decline that hands the drop to the next
+    plugin. Discovery raises when two filenames parse to the same field of view,
+    which "P1.zarr" beside "P0001.zarr" does -- both parse to 1. Checking the
+    field of view eagerly, rather than leaving it to the parse, moved that raise
+    into the selection path, so it has to be caught there.
+    """
+    images = pipeline_example / "nuc_images"
+    original = next(images.glob("P0*.zarr"))
+    shutil.copytree(original, images / "P1.zarr")
+    with caplog.at_level(logging.DEBUG):
+        assert get_reader(wrap_path(pipeline_example)) is None
+    assert "Cannot resolve fields of view" in caplog.text
 
 
 def test_a_folder_predating_published_images_says_so(pipeline_example, caplog, wrap_path):
@@ -96,4 +139,4 @@ def test_a_folder_predating_published_images_says_so(pipeline_example, caplog, w
         assert get_reader(wrap_path(pipeline_example)) is None
     assert "Not a folder: nuc_images" in caplog.text
     assert "resuming the run republishes it" in caplog.text
-    assert "nuc_masks" not in caplog.text.split("cannot read")[0].split("looptrace")[0]
+    assert "nuc_masks" not in caplog.text
