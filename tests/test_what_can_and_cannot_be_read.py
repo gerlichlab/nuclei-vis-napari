@@ -149,3 +149,39 @@ def test_cannot_parse_extant_file(tmp_path, wrap_path, caplog):
 def _omni_copy(src: Path, dst: Path) -> Path:
     cp = shutil.copytree if src.is_dir() else shutil.copy
     return cp(src, dst)
+
+
+@pytest.fixture
+def example_with_disjoint_fovs(tmp_path):
+    """A copy of an example whose centroid files name fields of view nothing else has.
+
+    All three subfolders exist and are non-empty; what they have in common is
+    nothing. A run restricted with `selected_fovs`, or three folders assembled by
+    hand from different analyses, lands here.
+    """
+    root = tmp_path / EXAMPLE_FOLDERS[0].name
+    shutil.copytree(EXAMPLE_FOLDERS[0], root)
+    centers = next(
+        p for p in root.iterdir() if p.is_dir() and "nuclear_masks_visualisation" in p.name
+    )
+    for i, fp in enumerate(sorted(centers.iterdir())):
+        fp.rename(fp.with_name(fp.name.replace(fp.name.split(".")[0], f"P{9990 + i}")))
+    return root
+
+
+def test_disjoint_fields_of_view_cannot_be_read(example_with_disjoint_fovs, wrap_path):
+    """Refused, rather than accepted and then fatal.
+
+    Returning a reader is a claim that the folder can be read. Without this check
+    the claim was made and the parse then died inside `np.stack` on an empty
+    list -- a message naming neither fields of view nor the folder, for a user
+    who had done nothing stranger than drag a partial-FOV run.
+    """
+    assert get_reader(wrap_path(example_with_disjoint_fovs)) is None
+
+
+def test_the_refusal_names_what_each_subfolder_held(example_with_disjoint_fovs, caplog):
+    """The counts are the diagnosis: three non-empty folders, no overlap."""
+    with caplog.at_level(logging.DEBUG):
+        get_reader(example_with_disjoint_fovs)
+    assert "No field of view is present in all three subfolders" in caplog.text

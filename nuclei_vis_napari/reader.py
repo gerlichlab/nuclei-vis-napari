@@ -55,6 +55,21 @@ def get_reader(path: PathOrPaths) -> Optional[Reader]:  # noqa: D103
         )
         return None
 
+    # ...and they must describe at least one field of view IN COMMON. Checked
+    # here rather than left to the parse, because returning a reader is a claim
+    # that the folder can be read: without this, napari accepted the drop and
+    # then died in np.stack on an empty list, which names nothing the user can
+    # act on. Filenames only, so this costs a directory listing, not an array.
+    counts = {
+        name: len(paths) for name, paths in NucleiDataSubfolders.paths_by_fov(path).items()
+    }
+    if not NucleiDataSubfolders.shared_fields_of_view(path):
+        do_not_parse(
+            "No field of view is present in all three subfolders, so there is"
+            f" nothing to display; data files found per subfolder: {counts}"
+        )
+        return None
+
     def parse(root: PathOrPaths) -> list[FullDataLayer]:
         if not _is_path_like(root):
             # Impossibility should be assured by the above logic, so don't test for coverage.
@@ -78,6 +93,14 @@ def get_reader(path: PathOrPaths) -> Optional[Reader]:  # noqa: D103
 def build_layers(  # noqa: D103
     bundles: Mapping[FieldOfViewFrom1, NucleiVisualisationData],
 ) -> tuple[NapariLayer, NapariLayer, NapariLayer]:
+    if not bundles:
+        # get_reader refuses this case, so reaching here is a programming error;
+        # it still gets its own message rather than numpy's "need at least one
+        # array to stack", which says nothing about fields of view.
+        raise ValueError(
+            "Cannot build layers from no data bundles: no field of view had an"
+            " image, a mask and centroids together"
+        )
     images = []
     masks = []
     nuclei_points = []

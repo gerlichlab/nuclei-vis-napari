@@ -41,16 +41,47 @@ class NucleiDataSubfolders(Enum):
         return all(m.is_present_within(p) for m in cls)
 
     @classmethod
+    @classmethod
+    def paths_by_fov(cls, p: PathLike) -> dict[str, dict[FieldOfViewFrom1, Path]]:
+        """Per subfolder, the data file for each field of view found in it.
+
+        Filenames only: no array is opened, so this is cheap enough for
+        ``get_reader`` to consult before it claims it can read a folder.
+        """
+        return {
+            cls.IMAGES.value: find_single_path_by_fov(
+                cls.IMAGES.relpath(p), extension=".zarr"
+            ),
+            cls.MASKS.value: find_single_path_by_fov(
+                cls.MASKS.relpath(p), extension=".zarr"
+            ),
+            cls.CENTERS.value: find_single_path_by_fov(
+                cls.CENTERS.relpath(p), extension=".nuclear_masks.csv"
+            ),
+        }
+
+    @classmethod
+    def shared_fields_of_view(cls, p: PathLike) -> set[FieldOfViewFrom1]:
+        """The fields of view for which ALL THREE subfolders have data.
+
+        A field of view present in only some of them cannot be displayed -- the
+        image, the mask and the centroids are one layer stack -- so the usable
+        set is the intersection, and it can be empty even when all three folders
+        exist and are full. That happens whenever the folders describe different
+        subsets: a run restricted with `selected_fovs`, or three folders
+        assembled by hand from different analyses.
+        """
+        by_fov = cls.paths_by_fov(p)
+        return set.intersection(*(set(paths) for paths in by_fov.values()))
+
+    @classmethod
     def read_all_from_root(cls, p: PathLike) -> dict[FieldOfViewFrom1, "NucleiVisualisationData"]:
         """For each field of view in the given folder, deter,ome the nuclei data paths."""
-        image_paths = find_single_path_by_fov(cls.IMAGES.relpath(p), extension=".zarr")
-        masks_paths = find_single_path_by_fov(cls.MASKS.relpath(p), extension=".zarr")
-        centers_paths = find_single_path_by_fov(
-            cls.CENTERS.relpath(p), extension=".nuclear_masks.csv"
-        )
-        fields_of_view = (
-            set(image_paths.keys()) & set(masks_paths.keys()) & set(centers_paths.keys())
-        )
+        by_fov = cls.paths_by_fov(p)
+        image_paths = by_fov[cls.IMAGES.value]
+        masks_paths = by_fov[cls.MASKS.value]
+        centers_paths = by_fov[cls.CENTERS.value]
+        fields_of_view = cls.shared_fields_of_view(p)
         logging.debug("Image paths count: %d", len(image_paths))
         logging.debug("Masks paths count: %d", len(masks_paths))
         logging.debug("Centers paths count: %d", len(centers_paths))
