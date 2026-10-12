@@ -29,7 +29,7 @@ jobs:
           path: |
             ~/.cache/pypoetry/virtualenvs
             ~/.cache/pytest
-          key: ${{ runner.os }}-poetry-tests-${{ hashFiles('poetry.lock') }}
+          key: ${{ runner.os }}-python-${{ matrix.python-version }}-poetry-format-${{ hashFiles('poetry.lock') }}
       - name: Install project
         run: poetry sync --no-interaction --with formatting
       - name: Run codespell
