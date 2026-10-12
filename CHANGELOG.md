@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.3.0] - 2026-10-13
+
+### Changed
+* Depend on `gertils` v0.7.0, whose `find_single_path_by_fov` reads a field of view from a file name more strictly. The names this plugin looks for are read as before.
+* Drop support for Python 3.10, which gertils v0.7.0 no longer supports: nuclei-vis-napari requires Python 3.11 or 3.12, and no longer depends on `importlib_resources`.
+* Allow napari 0.5 to 0.9 on macOS, as well as 0.4.19.post1, where it was pinned at 0.4.19.post1. napari 0.9 needs Python 3.11 or later. The plugin's own lock and macOS CI use napari 0.9.2; looptrace, which holds numpy below the 1.25 that napari 0.9 needs, keeps 0.4.19.
+* The Nix shell uses nixpkgs 26.05, with Poetry 2, and `poetry.lock` is in Poetry 2's format.
+* CI installs the newest Poetry, as it already did: the `poetry-version` the workflows set, `1.7.1`, is not an input of the action that installs Poetry, so it had no effect. Each CI job caches its environment separately, per Python.
+
 ## [v0.2.0] - 2026-09-22
 
 ### Added
