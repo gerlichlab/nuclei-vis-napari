@@ -13,7 +13,6 @@ classifiers = [
     "Operating System :: POSIX :: Linux",
     "Operating System :: MacOS",
     "Operating System :: Microsoft :: Windows",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Topic :: Scientific/Engineering :: Bio-Informatics",
@@ -28,9 +27,8 @@ build-backend = "poetry.core.masonry.api"
 nuclei-vis-napari = "nuclei_vis_napari:napari.yaml"
 
 [tool.poetry.dependencies]
-python = ">=3.10,<3.13"
+python = ">=3.11,<3.13"
 gertils = { git = "https://github.com/gerlichlab/gertils.git", tag = "v0.6.1" }
-importlib_resources = { version = "*", markers = "python_version < '3.11'" }
 numpy = "*"
 numpydoc_decorator = ">=2.2.1"
 pandas = "*"
@@ -102,7 +100,7 @@ strict_optional = true
 # Black uses line-length = 88, but allows exceptions when breaking the line
 # would lead to other rule violations. Use 100 as a maximum hard limit:
 line-length = 100
-target-version = "py310"
+target-version = "py311"
 
 [tool.ruff.lint]
 select = ["ALL"]

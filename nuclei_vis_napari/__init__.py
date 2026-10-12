@@ -2,12 +2,7 @@
 
 __version__ = "0.2.0"
 
-import sys
-
-if sys.version_info < (3, 11):
-    import importlib_resources  # pragma: no cover
-else:
-    import importlib.resources as importlib_resources  # pragma: no cover
+import importlib.resources as importlib_resources
 from pathlib import Path
 
 from numpydoc_decorator import doc  # type: ignore[import-untyped]
