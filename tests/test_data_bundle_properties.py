@@ -60,7 +60,8 @@ def gen_image_5d_invalid_because_of_nontrivial_first_dimension(draw):
     gen_dim = st.integers(min_value=1, max_value=8)
     img = draw(
         hyp_npy.arrays(
-            dtype=gen_pixel_datatype, shape=st.tuples(gen_dim, gen_dim, gen_dim, gen_dim, gen_dim)
+            dtype=gen_pixel_datatype,
+            shape=st.tuples(gen_dim, gen_dim, gen_dim, gen_dim, gen_dim),
         )
     )
     hyp.assume(img.shape[0] != 1)
@@ -74,7 +75,9 @@ def gen_image_5d_invalid_because_of_nontrivial_first_dimension(draw):
             gen_image_5d_invalid_because_of_nontrivial_first_dimension().map(
                 lambda img: (
                     img,
-                    ValueError("5D image for nuclei visualisation must have trivial first"),
+                    ValueError(
+                        "5D image for nuclei visualisation must have trivial first"
+                    ),
                 )
             ),
         ),
@@ -85,11 +88,17 @@ def gen_image_5d_invalid_because_of_nontrivial_first_dimension(draw):
 @hyp.settings(phases=tuple(p for p in hyp.Phase if p != hyp.Phase.shrink))
 def test_five_dimensional_image(bundle_expectation_pair):
     (image, masks, centers), expectation = bundle_expectation_pair
-    assert len(image.shape) == 5, f"Generataed image that's not 5D, but {len(image.shape)}D"  # noqa: PLR2004
+    assert (
+        len(image.shape) == 5  # noqa: PLR2004
+    ), f"Generataed image that's not 5D, but {len(image.shape)}D"
     match expectation:
         case None:
-            observed = NucleiVisualisationData(image=image, masks=masks, centers=centers)
-            expected = NucleiVisualisationData(image=image[0][0][0], masks=masks, centers=centers)
+            observed = NucleiVisualisationData(
+                image=image, masks=masks, centers=centers
+            )
+            expected = NucleiVisualisationData(
+                image=image[0][0][0], masks=masks, centers=centers
+            )
             assert observed == expected
         case ValueError() as e:
             with pytest.raises(ValueError, match=str(e)):
@@ -101,9 +110,9 @@ def test_five_dimensional_image(bundle_expectation_pair):
 @hyp.given(
     image=hyp_npy.arrays(
         dtype=gen_pixel_datatype,
-        shape=st.lists(st.integers(min_value=1, max_value=10), min_size=3, max_size=3).map(
-            lambda shape: (1, *tuple(shape))
-        ),
+        shape=st.lists(
+            st.integers(min_value=1, max_value=10), min_size=3, max_size=3
+        ).map(lambda shape: (1, *tuple(shape))),
     ),
     masks=st.one_of(gen_valid_masks_2d, gen_masks_5d__trivial_first_three),
     centers=gen_valid_centers,
@@ -219,7 +228,9 @@ def gen_4d_image_and_nuc_channel(draw):
     image = draw(
         hyp_npy.arrays(
             dtype=gen_pixel_datatype,
-            shape=st.lists(st.integers(min_value=1, max_value=8), min_size=4, max_size=4)
+            shape=st.lists(
+                st.integers(min_value=1, max_value=8), min_size=4, max_size=4
+            )
             .filter(lambda shape: shape[0] > 1)
             .map(tuple),
         )
@@ -245,14 +256,18 @@ def test_four_dimensional_image_with_nontrivial_channel_axis_and_but_good_nuc_ch
         else os.getenv(v),
     ):
         observed = NucleiVisualisationData(image=image, masks=masks, centers=centers)
-    expected = NucleiVisualisationData(image=image[channel], masks=masks, centers=centers)
+    expected = NucleiVisualisationData(
+        image=image[channel], masks=masks, centers=centers
+    )
     assert observed == expected
 
 
 @hyp.given(
     image=hyp_npy.arrays(
         dtype=gen_pixel_datatype,
-        shape=st.lists(st.integers(min_value=1, max_value=10), min_size=3, max_size=3).map(tuple),
+        shape=st.lists(
+            st.integers(min_value=1, max_value=10), min_size=3, max_size=3
+        ).map(tuple),
     ),
     masks=st.one_of(gen_valid_masks_2d, gen_masks_5d__trivial_first_three),
     centers=gen_valid_centers,
@@ -269,11 +284,15 @@ def test_three_dimensional_image(image, masks, centers):
 
 
 gen_image_with_too_many_or_too_few_dimensions = st.one_of(
-    hyp_npy.arrays(dtype=gen_pixel_datatype, shape=st.integers(min_value=1, max_value=100)),
+    hyp_npy.arrays(
+        dtype=gen_pixel_datatype, shape=st.integers(min_value=1, max_value=100)
+    ),
     hyp_npy.arrays(
         dtype=gen_pixel_datatype,
         # Don't let too big an array be generated; 3^8 is already big
-        shape=st.lists(st.integers(min_value=1, max_value=3), min_size=6, max_size=8).map(tuple),
+        shape=st.lists(
+            st.integers(min_value=1, max_value=3), min_size=6, max_size=8
+        ).map(tuple),
     ),
 )
 
@@ -283,7 +302,9 @@ gen_image_with_too_many_or_too_few_dimensions = st.one_of(
     masks=st.one_of(gen_valid_masks_2d, gen_masks_5d__trivial_first_three),
     centers=gen_valid_centers,
 )
-def test_image_of_more_than_five_or_fewer_than_two_dimensions_is_illegal(image, masks, centers):
+def test_image_of_more_than_five_or_fewer_than_two_dimensions_is_illegal(
+    image, masks, centers
+):
     with pytest.raises(ValueError) as error_context:  # noqa: PT011
         NucleiVisualisationData(image=image, masks=masks, centers=centers)
     assert (
@@ -298,9 +319,9 @@ def test_image_of_more_than_five_or_fewer_than_two_dimensions_is_illegal(image, 
     masks_and_expectation=st.one_of(
         hyp_npy.arrays(
             dtype=gen_pixel_datatype,
-            shape=st.lists(st.integers(min_value=1, max_value=3), min_size=1, max_size=8).map(
-                tuple
-            ),
+            shape=st.lists(
+                st.integers(min_value=1, max_value=3), min_size=1, max_size=8
+            ).map(tuple),
         )
         .filter(lambda masks: len(masks.shape) not in [2, 5])
         .map(
@@ -336,11 +357,15 @@ def test_any_masks_must_be_2d_or_5d(image, centers, masks_and_expectation):
     image=st.one_of(gen_valid_image_2d, gen_image_5d__trivial_first_three),
     masks=hyp_npy.arrays(
         dtype=gen_pixel_datatype,
-        shape=st.lists(st.integers(min_value=1, max_value=5), min_size=5, max_size=5).map(tuple),
+        shape=st.lists(
+            st.integers(min_value=1, max_value=5), min_size=5, max_size=5
+        ).map(tuple),
     ),
     centers=gen_valid_centers,
 )
-def test_5d_masks_without_trivial_initial_dimensions_gives_expected_error(image, masks, centers):
+def test_5d_masks_without_trivial_initial_dimensions_gives_expected_error(
+    image, masks, centers
+):
     assert len(masks.shape) == 5, f"Generated {len(image.shape)}D masks, not 5D"  # noqa: PLR2004
     hyp.assume(any(d > 1 for d in masks.shape[:3]))
     with pytest.raises(ValueError) as error_context:  # noqa: PT011

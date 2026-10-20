@@ -44,8 +44,12 @@ class NucleiDataSubfolders(Enum):
         ``get_reader`` to consult before it claims it can read a folder.
         """
         return {
-            cls.IMAGES.value: find_single_path_by_fov(cls.IMAGES.relpath(p), extension=".zarr"),
-            cls.MASKS.value: find_single_path_by_fov(cls.MASKS.relpath(p), extension=".zarr"),
+            cls.IMAGES.value: find_single_path_by_fov(
+                cls.IMAGES.relpath(p), extension=".zarr"
+            ),
+            cls.MASKS.value: find_single_path_by_fov(
+                cls.MASKS.relpath(p), extension=".zarr"
+            ),
             cls.CENTERS.value: find_single_path_by_fov(
                 cls.CENTERS.relpath(p), extension=".nuclear_masks.csv"
             ),
@@ -71,7 +75,9 @@ class NucleiDataSubfolders(Enum):
         return first.intersection(*rest)
 
     @classmethod
-    def read_all_from_root(cls, p: PathLike) -> dict[FieldOfViewFrom1, "NucleiVisualisationData"]:
+    def read_all_from_root(
+        cls, p: PathLike
+    ) -> dict[FieldOfViewFrom1, "NucleiVisualisationData"]:
         """For each field of view in the given folder, deter,ome the nuclei data paths."""
         by_fov = cls.paths_by_fov(p)
         image_paths = by_fov[cls.IMAGES.value]
@@ -93,7 +99,9 @@ class NucleiDataSubfolders(Enum):
             centers_fp: Path = centers_paths[fov]
             logging.debug("Reading nuclei centers: %s", centers_fp)
             centers = _read_csv(centers_fp)
-            bundles[fov] = NucleiVisualisationData(image=image, masks=masks, centers=centers)
+            bundles[fov] = NucleiVisualisationData(
+                image=image, masks=masks, centers=centers
+            )
         return bundles
 
     @property
@@ -213,7 +221,9 @@ class NucleiVisualisationData:  # noqa: D101
 
 
 @doc(
-    summary=("Read (from environment variable) the image channel in which to find nuclei signal."),
+    summary=(
+        "Read (from environment variable) the image channel in which to find nuclei signal."
+    ),
     raises=dict(
         ValueError="When the environment variable value's set to a non-integer-like",
     ),
@@ -237,14 +247,18 @@ def _determine_nuclei_channel() -> int:
 
 
 @doc(
-    summary=("Max project images z-stack along the z-axis, assumed to be axis 0 (first axis)."),
+    summary=(
+        "Max project images z-stack along the z-axis, assumed to be axis 0 (first axis)."
+    ),
     parameters=dict(img="The image stack to max-project along z"),
     raises=dict(ValueError="If the given image isn't 3D (z-stack of 2D images)"),
     returns="Array of 1 dimension less than input, reducing first dimension by taking maxima along it",
 )
 def max_project_z(img: PixelArray) -> PixelArray:  # noqa: D103
     if len(np.shape(img)) != 3:  # noqa: PLR2004
-        raise ValueError(f"Image to max-z-project must have 3 dimensions! Got {len(np.shape(img))}")
+        raise ValueError(
+            f"Image to max-z-project must have 3 dimensions! Got {len(np.shape(img))}"
+        )
     return np.max(img, axis=0)
 
 
@@ -258,5 +272,6 @@ def _read_csv(fp: Path) -> list[tuple[NucleusNumber, ImagePoint2D]]:
     xs = df[NuclusDataKey.CenterX.value]
 
     return [
-        (NucleusNumber(n), ImagePoint2D(y=y, x=x)) for n, y, x in zip(nuclei, ys, xs, strict=False)
+        (NucleusNumber(n), ImagePoint2D(y=y, x=x))
+        for n, y, x in zip(nuclei, ys, xs, strict=False)
     ]

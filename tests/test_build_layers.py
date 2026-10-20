@@ -61,7 +61,9 @@ def test_masks_of_different_sizes_raises_expected_error(shape1, shape2):
     shape2=st.lists(st.integers(min_value=1), min_size=2, max_size=5).map(tuple),
 )
 @hyp.settings(phases=tuple(p for p in hyp.Phase if p != hyp.Phase.shrink))
-def test_mismatch_between_image_shape_and_masks_shape_raises_expected_error(shape1, shape2):
+def test_mismatch_between_image_shape_and_masks_shape_raises_expected_error(
+    shape1, shape2
+):
     hyp.assume(shape1 != shape2)
     bundles = {
         FieldOfViewFrom1(1): mock.MagicMock(

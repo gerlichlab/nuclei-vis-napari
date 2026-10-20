@@ -36,7 +36,9 @@ def pipeline_example(tmp_path) -> Path:
 
 def test_pipeline_layout_can_be_read(pipeline_example, wrap_path):
     read_data = get_reader(wrap_path(pipeline_example))
-    assert callable(read_data), f"Expected to be able to parse data from {pipeline_example}"
+    assert callable(
+        read_data
+    ), f"Expected to be able to parse data from {pipeline_example}"
 
 
 def test_pipeline_layout_gives_same_layers_as_legacy_layout(pipeline_example):
@@ -52,7 +54,9 @@ def test_pipeline_layout_gives_same_layers_as_legacy_layout(pipeline_example):
 
 
 @pytest.mark.parametrize("subfolder", [m.value for m in NucleiDataSubfolders])
-def test_pipeline_layout_missing_subfolder_means_data_cannot_be_read(pipeline_example, subfolder):
+def test_pipeline_layout_missing_subfolder_means_data_cannot_be_read(
+    pipeline_example, subfolder
+):
     shutil.rmtree(pipeline_example / subfolder)
     assert get_reader(pipeline_example) is None
 
@@ -91,7 +95,9 @@ def test_unprefixed_centers_folder_is_preferred_when_both_are_present(pipeline_e
     assert centroids() == expected
 
 
-def test_a_stray_non_fov_entry_in_the_images_folder_is_ignored(pipeline_example, wrap_path):
+def test_a_stray_non_fov_entry_in_the_images_folder_is_ignored(
+    pipeline_example, wrap_path
+):
     """Whatever else sits beside the per-FOV stores must not stop the read.
 
     Nothing guarantees the published folder holds only `<fov>.zarr` entries --
@@ -101,7 +107,9 @@ def test_a_stray_non_fov_entry_in_the_images_folder_is_ignored(pipeline_example,
     leaving it to be rediscovered by whoever first sees a folder with a stray
     file in it.
     """
-    (pipeline_example / "nuc_images" / ".zgroup").write_text(json.dumps({"zarr_format": 2}))
+    (pipeline_example / "nuc_images" / ".zgroup").write_text(
+        json.dumps({"zarr_format": 2})
+    )
     (pipeline_example / "nuc_images" / ".DS_Store").write_bytes(b"\x00")
     assert callable(get_reader(wrap_path(pipeline_example)))
 
@@ -175,7 +183,9 @@ def test_an_untraversable_folder_is_declined_not_raised(
     assert "Cannot examine the contents of" in caplog.text
 
 
-def test_a_folder_predating_published_images_says_so(pipeline_example, caplog, wrap_path):
+def test_a_folder_predating_published_images_says_so(
+    pipeline_example, caplog, wrap_path
+):
     """The commonest refusal for a while, so it should name its own cause.
 
     Every analysis folder produced before looptrace published `nuc_images` looks

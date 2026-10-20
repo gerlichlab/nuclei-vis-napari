@@ -17,18 +17,26 @@ from nuclei_vis_napari.data_bundles import (
 )
 from nuclei_vis_napari.reader import get_reader
 
-EXPECTED_FIELDS_OF_VIEW: list[FieldOfViewFrom1] = [FieldOfViewFrom1(raw_fov) for raw_fov in [1, 2]]
+EXPECTED_FIELDS_OF_VIEW: list[FieldOfViewFrom1] = [
+    FieldOfViewFrom1(raw_fov) for raw_fov in [1, 2]
+]
 
 
 def test_read_all_from_root_is_correct_on_example(wrap_path):
     images_folder = get_images_folder()
-    assert images_folder.is_dir(), f"Images folder isn't an extant directory: {images_folder}"
+    assert (
+        images_folder.is_dir()
+    ), f"Images folder isn't an extant directory: {images_folder}"
     masks_folder = get_masks_folder()
-    assert masks_folder.is_dir(), f"Masks folder isn't an extant directory: {masks_folder}"
+    assert (
+        masks_folder.is_dir()
+    ), f"Masks folder isn't an extant directory: {masks_folder}"
     read_centers_file = lambda fov: [  # noqa: E731
         (
             NucleusNumber(int(row[NuclusDataKey.Label.value])),
-            ImagePoint2D(y=row[NuclusDataKey.CenterY.value], x=row[NuclusDataKey.CenterX.value]),
+            ImagePoint2D(
+                y=row[NuclusDataKey.CenterY.value], x=row[NuclusDataKey.CenterX.value]
+            ),
         )
         for _, row in pd.read_csv(get_centers_file(fov), index_col=0).iterrows()
     ]
@@ -60,14 +68,18 @@ def test_layers_are_correct_on_example():
             (obs_centers_layer_data, obs_centers_layer_params, obs_centers_layer_name),
         ) = read_data(example)
     except Exception as e:  # noqa: BLE001
-        pytest.fail(f"Failed to read example ({example}) or to unpack result. Got error: {e}")
+        pytest.fail(
+            f"Failed to read example ({example}) or to unpack result. Got error: {e}"
+        )
 
     def read_points_data(fp: Path) -> tuple[list[list[float | np.float64]], list[int]]:
         coordinates: list[list[float | np.float64]] = []
         labels: list[int] = []
         df = pd.read_csv(fp, index_col=0)  # noqa: PD901
         for _, row in df.iterrows():
-            coordinates.append([row[NuclusDataKey.CenterY.value], row[NuclusDataKey.CenterX.value]])
+            coordinates.append(
+                [row[NuclusDataKey.CenterY.value], row[NuclusDataKey.CenterX.value]]
+            )
             labels.append(row[NuclusDataKey.Label.value])
         return coordinates, labels
 
@@ -79,7 +91,9 @@ def test_layers_are_correct_on_example():
     assert np.array_equal(obs_image_data, exp_image_data)
 
     # Validate the masks layer.
-    exp_masks_layer_data = np.stack([read_masks_file(fov) for fov in EXPECTED_FIELDS_OF_VIEW])
+    exp_masks_layer_data = np.stack(
+        [read_masks_file(fov) for fov in EXPECTED_FIELDS_OF_VIEW]
+    )
     assert obs_masks_layer_name == "labels"
     assert obs_masks_layer_params == {"name": "masks"}
     assert np.shape(obs_masks_layer_data) == exp_masks_layer_data.shape

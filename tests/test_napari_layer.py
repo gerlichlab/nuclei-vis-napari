@@ -25,7 +25,9 @@ def gen_napari_layer(draw, layer_type: Optional[NapariLayerType] = None):
         st.dictionaries(
             # Keep to relatively manageable size.
             keys=st.one_of(st.characters(), st.integers(), st.text(max_size=10)),
-            values=st.one_of(st.booleans(), st.characters(), st.floats(), st.integers(), st.text()),
+            values=st.one_of(
+                st.booleans(), st.characters(), st.floats(), st.integers(), st.text()
+            ),
             # Keep to relatively manageable size.
             max_size=4,
         )
@@ -42,13 +44,17 @@ def gen_napari_layer(draw, layer_type: Optional[NapariLayerType] = None):
 def test_equivalence_test_is_prohibited_for_napari_layers(layer1, layer2):
     assert isinstance(layer1, NapariLayer)
     assert isinstance(layer2, NapariLayer)
-    with pytest.raises(NotImplementedError, match="Do not directly compare Napari layers!"):
+    with pytest.raises(
+        NotImplementedError, match="Do not directly compare Napari layers!"
+    ):
         assert layer1 == layer2
 
 
 @hyp.given(
     layer_and_expectation=st.one_of(
-        gen_napari_layer(layer_type=NapariLayerType.Image).map(lambda layer: (layer, True)),
+        gen_napari_layer(layer_type=NapariLayerType.Image).map(
+            lambda layer: (layer, True)
+        ),
         gen_napari_layer()
         .filter(lambda layer: layer.get_type != NapariLayerType.Image)
         .map(lambda layer: (layer, False)),
@@ -61,7 +67,9 @@ def test_image_check_is_correct(layer_and_expectation):
 
 @hyp.given(
     layer_and_expectation=st.one_of(
-        gen_napari_layer(layer_type=NapariLayerType.Labels).map(lambda layer: (layer, True)),
+        gen_napari_layer(layer_type=NapariLayerType.Labels).map(
+            lambda layer: (layer, True)
+        ),
         gen_napari_layer()
         .filter(lambda layer: layer.get_type != NapariLayerType.Labels)
         .map(lambda layer: (layer, False)),
@@ -74,7 +82,9 @@ def test_labels_check_is_correct(layer_and_expectation):
 
 @hyp.given(
     layer_and_expectation=st.one_of(
-        gen_napari_layer(layer_type=NapariLayerType.Points).map(lambda layer: (layer, True)),
+        gen_napari_layer(layer_type=NapariLayerType.Points).map(
+            lambda layer: (layer, True)
+        ),
         gen_napari_layer()
         .filter(lambda layer: layer.get_type != NapariLayerType.Points)
         .map(lambda layer: (layer, False)),
@@ -99,7 +109,8 @@ def test_layer_cast_to_image_layer_is_correct(layer):
         assert name == "image"
     else:
         with pytest.raises(
-            NotImplementedError, match=f"Cannot cast {layer.get_type.value} layer as image layer"
+            NotImplementedError,
+            match=f"Cannot cast {layer.get_type.value} layer as image layer",
         ):
             layer.as_image  # noqa: B018
 
@@ -118,7 +129,8 @@ def test_layer_cast_to_labels_layer_is_correct(layer):
         assert name == "labels"
     else:
         with pytest.raises(
-            NotImplementedError, match=f"Cannot cast {layer.get_type.value} layer as labels layer"
+            NotImplementedError,
+            match=f"Cannot cast {layer.get_type.value} layer as labels layer",
         ):
             layer.as_labels  # noqa: B018
 
@@ -137,7 +149,8 @@ def test_layer_cast_to_points_layer_is_correct(layer):
         assert name == "points"
     else:
         with pytest.raises(
-            NotImplementedError, match=f"Cannot cast {layer.get_type.value} layer as points layer"
+            NotImplementedError,
+            match=f"Cannot cast {layer.get_type.value} layer as points layer",
         ):
             layer.as_points  # noqa: B018
 

@@ -41,7 +41,9 @@ def test_a_dropped_example_folder_reaches_this_plugin(plugin_manager):
     assert READER_COMMAND in _reader_commands_for(plugin_manager, folder)
 
 
-def test_a_folder_whose_name_does_not_match_the_pattern_still_reaches_it(plugin_manager, tmp_path):
+def test_a_folder_whose_name_does_not_match_the_pattern_still_reaches_it(
+    plugin_manager, tmp_path
+):
     """The documented promise that the folder's NAME is irrelevant.
 
     `filename_patterns` still says 'images*'; this is what makes that vestigial

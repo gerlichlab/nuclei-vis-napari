@@ -54,7 +54,9 @@ def test_extra_files_and_folders_are_ignored(tmp_path, wrap_path, example_folder
 
     # Get the data reader and check that it's callable.
     read_data = get_reader(wrap_path(data_home))
-    assert callable(read_data), f"Expected to be able to parse data from {data_home} but couldn't"
+    assert callable(
+        read_data
+    ), f"Expected to be able to parse data from {data_home} but couldn't"
 
 
 @pytest.mark.parametrize(
@@ -78,7 +80,9 @@ def test_any_missing_file_means_data_cannot_be_read(tmp_path, wrap_path, omit_sp
     assert sum(1 for _ in tmp_path.iterdir()) == len(candidate_paths) - num_omit
     read_data = get_reader(wrap_path(tmp_path))
     if num_omit == 0:
-        assert callable(read_data), "Failed to get callable reader even when omitting nothing!"
+        assert callable(
+            read_data
+        ), "Failed to get callable reader even when omitting nothing!"
     else:
         assert (
             read_data is None
@@ -104,14 +108,18 @@ def test_required_elements_cannot_be_read_individually(example_path, wrap_path, 
         assert member.value in obs_msg
 
 
-@pytest.mark.parametrize("example_paths", [list(folder.iterdir()) for folder in EXAMPLE_FOLDERS])
+@pytest.mark.parametrize(
+    "example_paths", [list(folder.iterdir()) for folder in EXAMPLE_FOLDERS]
+)
 def test_required_elements_cannot_be_read_as_list(example_paths):
     assert isinstance(example_paths, list)
     assert get_reader(example_paths) is None
 
 
 @pytest.mark.parametrize("example_folder", EXAMPLE_FOLDERS)
-def test_required_cannot_read_example_folder_if_wrapped_in_list(example_folder, wrap_path):
+def test_required_cannot_read_example_folder_if_wrapped_in_list(
+    example_folder, wrap_path
+):
     assert get_reader([wrap_path(example_folder)]) is None
 
 
@@ -125,7 +133,9 @@ def test_cannot_parse_non_path_like(bad_arg, caplog):
         read_data = get_reader(bad_arg)
     assert read_data is None
     obs_msg = list(caplog.records)[-1].message
-    exp_msg = f"Not a path-like: {bad_arg}, cannot read looptrace nuclei visualisation data"
+    exp_msg = (
+        f"Not a path-like: {bad_arg}, cannot read looptrace nuclei visualisation data"
+    )
     assert obs_msg == exp_msg
 
 
@@ -168,7 +178,9 @@ def example_with_disjoint_fovs(tmp_path):
     root = tmp_path / EXAMPLE_FOLDERS[0].name
     shutil.copytree(EXAMPLE_FOLDERS[0], root)
     centers = next(
-        p for p in root.iterdir() if p.is_dir() and "nuclear_masks_visualisation" in p.name
+        p
+        for p in root.iterdir()
+        if p.is_dir() and "nuclear_masks_visualisation" in p.name
     )
     for i, fp in enumerate(sorted(centers.iterdir())):
         fp.rename(fp.with_name(fp.name.replace(fp.name.split(".")[0], f"P{9990 + i}")))

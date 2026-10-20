@@ -84,9 +84,7 @@ strict = ["nuclei_vis_napari"]
 reportUnnecessaryTypeIgnoreComment = "error"
 
 [tool.ruff]
-# Black uses line-length = 88, but allows exceptions when breaking the line
-# would lead to other rule violations. Use 100 as a maximum hard limit:
-line-length = 100
+# No line-length: ruff's default of 88, as in the other repositories behind looptrace.
 target-version = "py311"
 
 [tool.ruff.lint]

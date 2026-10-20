@@ -51,7 +51,9 @@ def _why_not_readable(path: Path) -> Optional[_Refusal]:
     """
     # Each of the subpaths to parse must be an extant folder.
     missing = [
-        member.value for member in NucleiDataSubfolders if not member.is_present_within(path)
+        member.value
+        for member in NucleiDataSubfolders
+        if not member.is_present_within(path)
     ]
     if missing:
         # Name what is missing, not all three: for a while the common case will
@@ -89,7 +91,9 @@ def _why_not_readable(path: Path) -> Optional[_Refusal]:
     summary=(
         "This is the main hook required by napari / napari plugins to provide a Reader plugin."
     ),
-    parameters=dict(path="Path to the folder (with proper substructure) with nuclei data to view"),
+    parameters=dict(
+        path="Path to the folder (with proper substructure) with nuclei data to view"
+    ),
     returns="A callable that accepts a list of paths and returns the layers for nuclei vis",
 )
 def get_reader(path: PathOrPaths) -> Optional[Reader]:  # noqa: D103
@@ -125,7 +129,9 @@ def get_reader(path: PathOrPaths) -> Optional[Reader]:  # noqa: D103
     try:
         refusal = _why_not_readable(folder)
     except (RuntimeError, OSError) as e:
-        refusal = _Refusal(f"Cannot examine the contents of {folder}: {e}", logging.WARNING)
+        refusal = _Refusal(
+            f"Cannot examine the contents of {folder}: {e}", logging.WARNING
+        )
     if refusal is not None:
         do_not_parse(refusal.why, level=refusal.level)
         return None
@@ -146,8 +152,12 @@ def get_reader(path: PathOrPaths) -> Optional[Reader]:  # noqa: D103
 
 @doc(
     summary="Build the multiple layers (image, masks, points) to look at nuclei in napari.",
-    parameters=dict(bundles="Mapping from FOV to the bundle of data needed to visualise its data"),
-    raises=dict(RuntimeError="If images and masks aren't entirely uniform w.r.t. shape"),
+    parameters=dict(
+        bundles="Mapping from FOV to the bundle of data needed to visualise its data"
+    ),
+    raises=dict(
+        RuntimeError="If images and masks aren't entirely uniform w.r.t. shape"
+    ),
     returns="The layers needed to visualise nuclei across all FOVs",
 )
 def build_layers(  # noqa: D103
