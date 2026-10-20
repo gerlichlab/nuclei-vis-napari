@@ -9,7 +9,7 @@ from typing import Literal, NamedTuple, Optional
 
 import numpy as np
 from gertils.types import FieldOfViewFrom1, PixelArray
-from numpydoc_decorator import doc  # type: ignore[import-untyped]
+from numpydoc_decorator import doc
 
 from .data_bundles import NucleiDataSubfolders, NucleiVisualisationData
 from .napari_layer import LayerData, LayerParams, NapariLayer, NapariLayerType
@@ -106,7 +106,7 @@ def get_reader(path: PathOrPaths) -> Optional[Reader]:  # noqa: D103
     if not os.path.isdir(path):  # noqa: PTH112
         do_not_parse(f"Not an extant directory: {path}")
         return None
-    path: Path = Path(path)  # type: ignore[no-redef]
+    folder = Path(path)
 
     # Declining must not THROW. Everything above is a decline; the folder checks
     # touch the filesystem, and napari calls this during reader SELECTION, where
@@ -123,9 +123,9 @@ def get_reader(path: PathOrPaths) -> Optional[Reader]:  # noqa: D103
     # reporting "not a directory", so a folder that is readable but not
     # traversable throws before any listing is attempted.
     try:
-        refusal = _why_not_readable(path)  # type: ignore[arg-type]
+        refusal = _why_not_readable(folder)
     except (RuntimeError, OSError) as e:
-        refusal = _Refusal(f"Cannot examine the contents of {path}: {e}", logging.WARNING)
+        refusal = _Refusal(f"Cannot examine the contents of {folder}: {e}", logging.WARNING)
     if refusal is not None:
         do_not_parse(refusal.why, level=refusal.level)
         return None
@@ -161,22 +161,23 @@ def build_layers(  # noqa: D103
             "Cannot build layers from no data bundles: no field of view had an"
             " image, a mask and centroids together"
         )
-    images = []
-    masks = []
-    nuclei_points = []
-    nuclei_labels = []
-    image_shape: tuple[int, ...]
+    images: list[PixelArray] = []
+    masks: list[PixelArray] = []
+    nuclei_points: list[list[float]] = []
+    nuclei_labels: list[int] = []
+    image_shape: Optional[tuple[int, ...]] = None
     for i, (_, visdata) in enumerate(sorted(bundles.items(), key=itemgetter(0))):
-        img = visdata.image
-        if i == 0:
-            image_shape = img.shape
-        if img.shape != image_shape:
+        img_shape = np.shape(visdata.image)
+        if image_shape is None:
+            image_shape = img_shape
+        if img_shape != image_shape:
             raise RuntimeError(
-                f"Image shape for FOV {i} doesn't match previous: {img.shape} != {image_shape}"
+                f"Image shape for FOV {i} doesn't match previous: {img_shape} != {image_shape}"
             )
-        if visdata.masks.shape != image_shape:
+        masks_shape = np.shape(visdata.masks)
+        if masks_shape != image_shape:
             raise RuntimeError(
-                f"Masks shape for FOV {i} doesn't match previous: {visdata.masks.shape} != {image_shape}"
+                f"Masks shape for FOV {i} doesn't match previous: {masks_shape} != {image_shape}"
             )
         images.append(visdata.image)
         masks.append(visdata.masks)
@@ -185,17 +186,17 @@ def build_layers(  # noqa: D103
             nuclei_labels.append(nuc.get)
 
     # Prep the data for presentation as layers.
-    images: PixelArray = np.stack(images)  # type: ignore[no-redef]
-    logging.debug("Image layer data shape: %s", images.shape)  # type: ignore[attr-defined]
-    masks: PixelArray = np.stack(masks)  # type: ignore[no-redef]
-    logging.debug("Masks layer data shape: %s", masks.shape)  # type: ignore[attr-defined]
+    image_stack: PixelArray = np.stack(images)
+    logging.debug("Image layer data shape: %s", np.shape(image_stack))
+    masks_stack: PixelArray = np.stack(masks)
+    logging.debug("Masks layer data shape: %s", np.shape(masks_stack))
 
     labs_text = {
         "string": "{nucleus}",
         "size": 10,  # tested on FOVs of 2048 (x) x 2044 (y), with ~15-20 nuclei per FOV
         "color": "black",
     }
-    points_params = {
+    points_params: LayerParams = {
         "name": "labels",
         "size": 0,
         "text": labs_text,
@@ -203,12 +204,12 @@ def build_layers(  # noqa: D103
     }
 
     images_layer = NapariLayer(
-        data=images,
+        data=image_stack,
         parameters={"name": "max_proj_z"},
         get_type=NapariLayerType.Image,
     )
     masks_layer = NapariLayer(
-        data=masks,
+        data=masks_stack,
         parameters={"name": "masks"},
         get_type=NapariLayerType.Labels,
     )

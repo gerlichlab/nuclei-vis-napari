@@ -62,7 +62,7 @@ def test_layers_are_correct_on_example():
     except Exception as e:  # noqa: BLE001
         pytest.fail(f"Failed to read example ({example}) or to unpack result. Got error: {e}")
 
-    def read_points_data(fp: Path) -> tuple[list[float | np.float64], list[int]]:
+    def read_points_data(fp: Path) -> tuple[list[list[float | np.float64]], list[int]]:
         coordinates: list[list[float | np.float64]] = []
         labels: list[int] = []
         df = pd.read_csv(fp, index_col=0)  # noqa: PD901
@@ -75,14 +75,14 @@ def test_layers_are_correct_on_example():
     exp_image_data = np.stack([read_image_file(fov) for fov in EXPECTED_FIELDS_OF_VIEW])
     assert obs_image_layer_name == "image"
     assert obs_image_layer_params == {"name": "max_proj_z"}
-    assert obs_image_data.shape == exp_image_data.shape
+    assert np.shape(obs_image_data) == exp_image_data.shape
     assert np.array_equal(obs_image_data, exp_image_data)
 
     # Validate the masks layer.
     exp_masks_layer_data = np.stack([read_masks_file(fov) for fov in EXPECTED_FIELDS_OF_VIEW])
     assert obs_masks_layer_name == "labels"
     assert obs_masks_layer_params == {"name": "masks"}
-    assert obs_masks_layer_data.shape == exp_masks_layer_data.shape
+    assert np.shape(obs_masks_layer_data) == exp_masks_layer_data.shape
     assert np.array_equal(obs_masks_layer_data, exp_masks_layer_data)
 
     # Validate the centroids (points) layer.

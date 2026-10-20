@@ -50,19 +50,19 @@ optional = true
 
 [tool.poetry.group.formatting.dependencies]
 codespell = ">=2.2.4"
-ruff = "==0.7.4"  # https://github.com/astral-sh/ruff/issues/14681
+# The version looptrace pins, so the projects are formatted and linted by the same ruff.
+ruff = "==0.7.4"
 tomli = { version = "*", markers = "python_version < '3.11'" }
 
 [tool.poetry.group.linting]
 optional = true
 
 [tool.poetry.group.linting.dependencies]
-mypy = ">=1.0.1"
 pandas-stubs = "*"
-ruff = "==0.7.4"  # https://github.com/astral-sh/ruff/issues/14681
-
-[tool.poetry.group.testsuite]
-optional = true
+# The version looptrace pins, so the projects are type-checked by the same pyright.
+pyright = "==1.1.411"
+# The version looptrace pins, so the projects are formatted and linted by the same ruff.
+ruff = "==0.7.4"
 
 [tool.poetry.group.testsuite.dependencies]
 hypothesis = { version = "*", extras = ["numpy"] }
@@ -77,25 +77,11 @@ ignore-words-list = "jupyter,iff"
 check-filenames = true
 uri-ignore-words-list = "*"
 
-[tool.mypy]
-files = ['nuclei_vis_napari/*.py']
-warn_redundant_casts = true
-warn_unused_ignores = true
-warn_return_any = true
-warn_unreachable = true
-
-[[tool.mypy.overrides]]
-module = "nuclei_vis_napari.*"
-disallow_untyped_defs = true
-disallow_untyped_calls = true
-disallow_incomplete_defs = true
-check_untyped_defs = true
-disallow_any_unimported = true
-disallow_any_explicit = true
-disallow_any_generics = true
-disallow_subclassing_any = true
-implicit_optional = false
-strict_optional = true
+[tool.pyright]
+include = ["nuclei_vis_napari", "tests"]
+# The package itself gets strict checking; the tests get the standard level.
+strict = ["nuclei_vis_napari"]
+reportUnnecessaryTypeIgnoreComment = "error"
 
 [tool.ruff]
 # Black uses line-length = 88, but allows exceptions when breaking the line
@@ -158,6 +144,12 @@ ignore = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
+"typings/*" = [
+    # Stubs copy the signatures of third-party code, which we can't change.
+    "FBT001",  # Boolean-typed positional argument in function definition
+    "FBT002",  # Boolean default positional argument in function definition
+    "PLR0913",  # Too many arguments in function definition
+]
 "tests/*" = [
     # Ignore some groups of checks in our test code.
     "ANN",  # Type annotations

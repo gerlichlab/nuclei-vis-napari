@@ -13,7 +13,7 @@ from gertils.geometry import ImagePoint2D
 from gertils.pathtools import find_single_path_by_fov
 from gertils.types import FieldOfViewFrom1, NucleusNumber, PixelArray
 from gertils.zarr_tools import read_zarr
-from numpydoc_decorator import doc  # type: ignore[import-untyped]
+from numpydoc_decorator import doc
 
 from .type_aliases import PathLike
 
@@ -67,7 +67,8 @@ class NucleiDataSubfolders(Enum):
         Takes the result of ``paths_by_fov`` rather than a path, so that a caller
         needing both it and the per-subfolder counts pays for one scan, not two.
         """
-        return set.intersection(*(set(paths) for paths in by_fov.values()))
+        first, *rest = (set(paths) for paths in by_fov.values())
+        return first.intersection(*rest)
 
     @classmethod
     def read_all_from_root(cls, p: PathLike) -> dict[FieldOfViewFrom1, "NucleiVisualisationData"]:
@@ -142,22 +143,25 @@ class NucleiVisualisationData:  # noqa: D101
     def __eq__(self, value: object) -> bool:
         return (
             type(value) is type(self)
-            and np.array_equal(self.image, value.image)  # type: ignore[attr-defined]
-            and np.array_equal(self.masks, value.masks)  # type: ignore[attr-defined]
-            and self.centers == value.centers  # type: ignore[attr-defined]
+            and np.array_equal(self.image, value.image)
+            and np.array_equal(self.masks, value.masks)
+            and self.centers == value.centers
         )
 
     def __post_init__(self) -> None:  # noqa: C901
+        # np.shape is typed for numpy and dask arrays alike, and doesn't load a
+        # dask array; the arrays here are reassigned as they are reduced, so the
+        # shape is read afresh at each step rather than held in one variable.
         # First, handle the raw image.
-        if len(self.image.shape) == 5:  # noqa: PLR2004
-            if self.image.shape[0] != 1:
+        if len(np.shape(self.image)) == 5:  # noqa: PLR2004
+            if np.shape(self.image)[0] != 1:
                 raise ValueError(
                     "5D image for nuclei visualisation must have trivial first"
-                    f" dimension; got {self.image.shape[0]} (not 1)"
+                    f" dimension; got {np.shape(self.image)[0]} (not 1)"
                 )
             object.__setattr__(self, "image", self.image[0])
-        if len(self.image.shape) == 4:  # noqa: PLR2004
-            if self.image.shape[0] == 1:
+        if len(np.shape(self.image)) == 4:  # noqa: PLR2004
+            if np.shape(self.image)[0] == 1:
                 logging.debug("Collapsing trivial channel axis for nuclei image")
                 object.__setattr__(self, "image", self.image[0])
             else:
@@ -165,11 +169,11 @@ class NucleiVisualisationData:  # noqa: D101
                     "Multiple channels in nuclei image; attempting to determine which to use"
                 )
                 nuc_channel: int = _determine_nuclei_channel()
-                if nuc_channel < 0 or nuc_channel >= self.image.shape[0]:
+                if nuc_channel < 0 or nuc_channel >= np.shape(self.image)[0]:
                     raise ValueError(
                         "Illegal nuclei channel value (from"
                         f" {LOOPTRACE_NAPARI_NUCLEI_CHANNEL_ENV_VAR}), {nuc_channel},"
-                        f" for channel axis of length {self.image.shape[0]}"
+                        f" for channel axis of length {np.shape(self.image)[0]}"
                     )
                 logging.debug(
                     "Using nuclei channel (from %s): %d",
@@ -177,34 +181,34 @@ class NucleiVisualisationData:  # noqa: D101
                     nuc_channel,
                 )
                 object.__setattr__(self, "image", self.image[nuc_channel])
-        if len(self.image.shape) == 3:  # noqa: PLR2004
-            if self.image.shape[0] == 1:
+        if len(np.shape(self.image)) == 3:  # noqa: PLR2004
+            if np.shape(self.image)[0] == 1:
                 logging.debug("Collapsing trivial z-axis for nuclei image")
                 object.__setattr__(self, "image", self.image[0])
             else:
                 logging.debug("Max projecting along z for nuclei image")
                 object.__setattr__(self, "image", max_project_z(self.image))
-        if len(self.image.shape) == 2:  # noqa: PLR2004
+        if len(np.shape(self.image)) == 2:  # noqa: PLR2004
             # All good, 2D image
             pass
         else:
             raise ValueError(
-                f"Cannot use image with {len(self.image.shape)} dimension(s) for nuclei"
+                f"Cannot use image with {len(np.shape(self.image))} dimension(s) for nuclei"
                 " visualisation"
             )
 
         # Then, handle the masks image.
-        if len(self.masks.shape) == 5:  # noqa: PLR2004
-            if any(d != 1 for d in self.masks.shape[:3]):
+        if len(np.shape(self.masks)) == 5:  # noqa: PLR2004
+            if any(d != 1 for d in np.shape(self.masks)[:3]):
                 raise ValueError(
                     "5D nuclear masks image with at least 1 nontrivial (t, c, z) axis!"
-                    f" {self.masks.shape}"
+                    f" {np.shape(self.masks)}"
                 )
             logging.debug("Reducing 5D nuclear masks to 2D")
             object.__setattr__(self, "masks", self.masks[0, 0, 0])
-        if len(self.masks.shape) != 2:  # noqa: PLR2004
+        if len(np.shape(self.masks)) != 2:  # noqa: PLR2004
             raise ValueError(
-                f"Need 2D image for nuclear masks! Got {len(self.masks.shape)}: {self.masks.shape}"
+                f"Need 2D image for nuclear masks! Got {len(np.shape(self.masks))}: {np.shape(self.masks)}"
             )
 
 
@@ -239,14 +243,14 @@ def _determine_nuclei_channel() -> int:
     returns="Array of 1 dimension less than input, reducing first dimension by taking maxima along it",
 )
 def max_project_z(img: PixelArray) -> PixelArray:  # noqa: D103
-    if len(img.shape) != 3:  # noqa: PLR2004
-        raise ValueError(f"Image to max-z-project must have 3 dimensions! Got {len(img.shape)}")
-    return np.max(img, axis=0)  # type: ignore[no-any-return]
+    if len(np.shape(img)) != 3:  # noqa: PLR2004
+        raise ValueError(f"Image to max-z-project must have 3 dimensions! Got {len(np.shape(img))}")
+    return np.max(img, axis=0)
 
 
 def _read_csv(fp: Path) -> list[tuple[NucleusNumber, ImagePoint2D]]:
     logging.debug("Reading CSV: %s", fp)
-    df = pd.read_csv(fp, index_col=0)  # noqa: PD901
+    df = pd.read_csv(fp, index_col=0)  # noqa: PD901  # pyright: ignore[reportUnknownMemberType]
 
     # preserves data type of this column / field, .iterrows() seems to lose it.
     nuclei = df[NuclusDataKey.Label.value]

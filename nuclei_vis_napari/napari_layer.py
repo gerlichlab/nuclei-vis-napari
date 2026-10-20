@@ -5,7 +5,7 @@ from enum import Enum
 from typing import Literal
 
 import numpy.typing as npt
-from numpydoc_decorator import doc  # type: ignore[import-untyped]
+from numpydoc_decorator import doc
 
 LayerData = npt.ArrayLike
 LayerParams = dict[str, object]

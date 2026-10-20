@@ -154,7 +154,7 @@ def test_cannot_parse_extant_file(tmp_path, wrap_path, caplog):
 
 def _omni_copy(src: Path, dst: Path) -> Path:
     cp = shutil.copytree if src.is_dir() else shutil.copy
-    return cp(src, dst)
+    return Path(cp(src, dst))
 
 
 @pytest.fixture

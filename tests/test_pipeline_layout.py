@@ -4,6 +4,7 @@ import json
 import logging
 import shutil
 from pathlib import Path
+from typing import cast
 
 import numpy as np
 import pytest
@@ -68,7 +69,7 @@ def test_unprefixed_centers_folder_is_preferred_when_both_are_present(pipeline_e
 
     def centroids() -> list[tuple[float, float]]:
         *_, (points, _, _) = get_reader(pipeline_example)(pipeline_example)  # type: ignore[misc]
-        return [(y, x) for _, y, x in points]
+        return [(y, x) for _, y, x in cast("list[list[float]]", points)]
 
     expected = centroids()
     assert expected, "No centroid was read at all; the test would prove nothing"
