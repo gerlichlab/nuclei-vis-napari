@@ -50,7 +50,6 @@ optional = true
 codespell = ">=2.2.4"
 # The version looptrace pins, so the projects are formatted and linted by the same ruff.
 ruff = "==0.17.3"
-tomli = { version = "*", markers = "python_version < '3.11'" }
 
 [tool.poetry.group.linting]
 optional = true
@@ -72,7 +71,7 @@ typer = "*"
 zarr = ">=3.1,<4"
 
 [tool.codespell]
-skip = ".git,.mypy_cache,.nox,.vscode,__pycache__,poetry.lock,*.zarr"
+skip = ".git,.nox,.vscode,__pycache__,poetry.lock,*.zarr"
 builtin = "clear,rare,informal,usage,code,names"
 ignore-words-list = "jupyter,iff"
 check-filenames = true

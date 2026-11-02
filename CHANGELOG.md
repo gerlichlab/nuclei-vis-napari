@@ -14,7 +14,7 @@ See [looptrace issue 579](https://github.com/gerlichlab/looptrace/issues/579), w
 * ruff 0.7.4 -> 0.17.3 and pyright 1.1.411 -> 1.1.414, the newest releases, as in looptrace, gertils and the other plugins. The configuration names the rules that ruff renamed (`TC002`, `TC003`), no longer names those it removed (`ANN101`, `ANN102`), and ignores two that every rule now brings in: a copyright notice in each file (`CPY001`), as the LICENSE covers them all, and `X | None` for `Optional[X]` (`UP045`), which ruff split out of `UP007`, already ignored. pyright 1.1.414 finds nothing new. The casts of a layer raise their error themselves, instead of calling a method that raises it, so the six comments that suppressed ruff's and pyright's reports about it go; two `noqa` comments named a rule ruff no longer has (`PD901`); and the two classes that are unhashable on purpose, as they define `__eq__` without `__hash__`, tell ruff so (`PLW1641`). Four files are reformatted by ruff's newer style.
 
 ### Removed
-* Support for Python 3.11. nuclei-vis-napari requires Python 3.12, as gertils v0.8.0 does, and the newest releases of numpy, zarr and numcodecs. looptrace already requires Python 3.12. CI and the Nix shell use Python 3.12, and ruff targets it.
+* Support for Python 3.11. nuclei-vis-napari requires Python 3.12, which gertils v0.8.0 and the newest releases of numpy, zarr and numcodecs all need, and which looptrace already requires. CI and the Nix shell use Python 3.12, and ruff targets it. The upper bound stays below 3.13 because nothing here is tested on it: gertils allows 3.12 and 3.13 alike, so raising the bound is a question of extending CI rather than of a dependency.
 
 ## [v0.3.0] - 2026-10-13
 
