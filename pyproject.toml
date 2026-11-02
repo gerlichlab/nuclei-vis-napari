@@ -34,8 +34,9 @@ numpydoc_decorator = ">=2.2.1"
 pandas = "*"
 
 # OS-specific dependency declarations
-# From 0.4.19, which looptrace uses while it holds numpy below 1.25, to 0.9, which needs numpy 1.25.
-napari = { version = ">=0.4.19.post1,<0.10", markers = "sys_platform == 'darwin'" }
+# From 0.5, the first release that allows numpy 2, which the locked zarr and numcodecs
+# need, to 0.9. napari 0.4.19.post1 requires numpy below 2.
+napari = { version = ">=0.5,<0.10", markers = "sys_platform == 'darwin'" }
 pyqt6 = { version = ">=6.5.0", markers = "sys_platform == 'darwin'" }
 
 [tool.poetry.group.coverage]

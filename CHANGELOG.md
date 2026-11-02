@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 * Support for Python 3.13, alongside 3.12. gertils v0.8.0 and the rest of the dependencies allow it, and CI runs the tests, the formatting check and the linting on both versions.
-On 3.13 the lock takes `numpydoc_decorator` 2.3.0, since 2.2.1 declares itself incompatible with 3.13; on 3.12 it keeps 2.2.1. Nothing else resolves differently between the two.
+The lock takes `numpydoc_decorator` 2.3.0 on both, since 2.2.1 declares itself incompatible with 3.13. Nothing resolves differently between the two.
 The Nix shell stays on 3.12, and ruff targets it, as the lower of the two.
 
 ### Changed
@@ -19,6 +19,7 @@ See [looptrace issue 579](https://github.com/gerlichlab/looptrace/issues/579), w
 * ruff 0.7.4 -> 0.17.3 and pyright 1.1.411 -> 1.1.414, the newest releases, as in looptrace, gertils and the other plugins. The configuration names the rules that ruff renamed (`TC002`, `TC003`), no longer names those it removed (`ANN101`, `ANN102`), and ignores two that every rule now brings in: a copyright notice in each file (`CPY001`), as the LICENSE covers them all, and `X | None` for `Optional[X]` (`UP045`), which ruff split out of `UP007`, already ignored. pyright 1.1.414 finds nothing new. The casts of a layer raise their error themselves, instead of calling a method that raises it, so the six comments that suppressed ruff's and pyright's reports about it go; two `noqa` comments named a rule ruff no longer has (`PD901`); and the two classes that are unhashable on purpose, as they define `__eq__` without `__hash__`, tell ruff so (`PLW1641`). Four files are reformatted by ruff's newer style.
 
 ### Removed
+* Support for napari 0.4 on macOS: nuclei-vis-napari allows napari 0.5 to 0.9. napari 0.4.19.post1 requires numpy below 2, while the zarr and numcodecs this release is tested with need numpy 2. looptrace kept napari 0.4.19 by holding numpy below 1.25, which it can't with gertils v0.8.0, as that requires numpy 1.26. The plugin uses nothing that napari 0.5 changed.
 * Support for Python 3.11. The floor is Python 3.12, which gertils v0.8.0 and the newest releases of numpy, zarr and numcodecs all need, and which looptrace already requires.
 
 ## [v0.3.0] - 2026-10-13
