@@ -22,6 +22,9 @@ See [looptrace issue 579](https://github.com/gerlichlab/looptrace/issues/579), w
 * Support for napari 0.4 on macOS: nuclei-vis-napari allows napari 0.5 to 0.9. napari 0.4.19.post1 requires numpy below 2, while the zarr and numcodecs this release is tested with need numpy 2. looptrace kept napari 0.4.19 by holding numpy below 1.25, which it can't with gertils v0.8.0, as that requires numpy 1.26. The plugin uses nothing that napari 0.5 changed.
 * Support for Python 3.11. The floor is Python 3.12, which gertils v0.8.0 and the newest releases of numpy, zarr and numcodecs all need, and which looptrace already requires.
 
+### Fixed
+* The Nix shell provides Node.js, which the pyright package from PyPI runs on, as the shells of gertils, spotfishing and looptrace-regionals-vis do. Without it, pyright downloads its own Node.js, which can fail, as it did on Linux in looptrace-loci-vis' shell (gerlichlab/looptrace-loci-vis#19).
+
 ## [v0.3.0] - 2026-10-13
 
 ### Changed
