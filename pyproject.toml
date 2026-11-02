@@ -68,10 +68,10 @@ hypothesis = { version = "*", extras = ["numpy"] }
 npe2 = "*"
 pytest = ">=7.1.0"
 typer = "*"
-# To write the format-3 stores the tests read; the package itself never imports
-# zarr. Unbounded on purpose: Poetry resolves one version of a package for the
-# whole project, so a range here would bound the zarr the plugin runs on too,
-# and gertils is the one that should say which zarr it reads.
+# Only the tests import zarr, to write the format-3 stores they read; the package
+# reads its stores through gertils, which says which zarr that takes. A dependency
+# group is no part of the installed plugin, so a range here would bound only this
+# repository's own lock, where gertils already bounds zarr.
 zarr = "*"
 
 [tool.codespell]
