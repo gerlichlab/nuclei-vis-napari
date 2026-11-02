@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Type-check with `pyright` instead of `mypy`, as looptrace, gertils and spotfishing do. The package is checked strictly and the tests at the standard level.
 * Format at ruff's default line length of 88, where it was 100, as in the other repositories behind looptrace.
 
+### Removed
+* Support for Python 3.11. nuclei-vis-napari requires Python 3.12, as gertils v0.8.0 does, and the newest releases of numpy, zarr and numcodecs. looptrace already requires Python 3.12. CI and the Nix shell use Python 3.12, and ruff targets it.
+
 ## [v0.3.0] - 2026-10-13
 
 ### Changed

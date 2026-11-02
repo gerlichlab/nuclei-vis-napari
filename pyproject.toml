@@ -13,7 +13,6 @@ classifiers = [
     "Operating System :: POSIX :: Linux",
     "Operating System :: MacOS",
     "Operating System :: Microsoft :: Windows",
-    "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Topic :: Scientific/Engineering :: Bio-Informatics",
     "Typing :: Typed",
@@ -27,7 +26,7 @@ build-backend = "poetry.core.masonry.api"
 nuclei-vis-napari = "nuclei_vis_napari:napari.yaml"
 
 [tool.poetry.dependencies]
-python = ">=3.11,<3.13"
+python = ">=3.12,<3.13"
 gertils = { git = "https://github.com/gerlichlab/gertils.git", tag = "v0.7.0" }
 numpy = "*"
 numpydoc_decorator = ">=2.2.1"
@@ -85,7 +84,7 @@ reportUnnecessaryTypeIgnoreComment = "error"
 
 [tool.ruff]
 # No line-length: ruff's default of 88, as in the other repositories behind looptrace.
-target-version = "py311"
+target-version = "py312"
 
 [tool.ruff.lint]
 select = ["ALL"]

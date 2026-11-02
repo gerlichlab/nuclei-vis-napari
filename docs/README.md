@@ -15,4 +15,4 @@ If you'd like, you may even open a pull request to suggest an improvement to our
 
 __Virtual environment (e.g. `virtualenv`)__
 
-If you're not inclined to use Nix, ensure that you've installed `virtualenv` (e.g., `brew install virtualenv` on a Mac), and that you have Python available (e.g., `brew install python@3.11`). Then you may create and activate a virtual environment, into which you may install this project. Simply run `pip install .` from this project's [root folder](../).
+If you're not inclined to use Nix, ensure that you've installed `virtualenv` (e.g., `brew install virtualenv` on a Mac), and that you have Python available (e.g., `brew install python@3.12`). Then you may create and activate a virtual environment, into which you may install this project. Simply run `pip install .` from this project's [root folder](../).
