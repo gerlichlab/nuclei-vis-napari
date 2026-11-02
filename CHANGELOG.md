@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+* Support for Python 3.13, alongside 3.12. gertils v0.8.0 and the rest of the dependencies allow it, and CI runs the tests, the formatting check and the linting on both versions.
+On 3.13 the lock takes `numpydoc_decorator` 2.3.0, since 2.2.1 declares itself incompatible with 3.13; on 3.12 it keeps 2.2.1. Nothing else resolves differently between the two.
+The Nix shell stays on 3.12, and ruff targets it, as the lower of the two.
+
 ### Changed
 * Depend on `gertils` v0.8.0, which requires zarr 3, and whose `read_zarr` reads zarr format 3 as well as format 2: the plugin opens nuclei images and masks in either format.
 See [looptrace issue 579](https://github.com/gerlichlab/looptrace/issues/579), which moves looptrace to zarr 3.
@@ -14,7 +19,7 @@ See [looptrace issue 579](https://github.com/gerlichlab/looptrace/issues/579), w
 * ruff 0.7.4 -> 0.17.3 and pyright 1.1.411 -> 1.1.414, the newest releases, as in looptrace, gertils and the other plugins. The configuration names the rules that ruff renamed (`TC002`, `TC003`), no longer names those it removed (`ANN101`, `ANN102`), and ignores two that every rule now brings in: a copyright notice in each file (`CPY001`), as the LICENSE covers them all, and `X | None` for `Optional[X]` (`UP045`), which ruff split out of `UP007`, already ignored. pyright 1.1.414 finds nothing new. The casts of a layer raise their error themselves, instead of calling a method that raises it, so the six comments that suppressed ruff's and pyright's reports about it go; two `noqa` comments named a rule ruff no longer has (`PD901`); and the two classes that are unhashable on purpose, as they define `__eq__` without `__hash__`, tell ruff so (`PLW1641`). Four files are reformatted by ruff's newer style.
 
 ### Removed
-* Support for Python 3.11. nuclei-vis-napari requires Python 3.12, which gertils v0.8.0 and the newest releases of numpy, zarr and numcodecs all need, and which looptrace already requires. CI and the Nix shell use Python 3.12, and ruff targets it. The upper bound stays below 3.13 because nothing here is tested on it: gertils allows 3.12 and 3.13 alike, so raising the bound is a question of extending CI rather than of a dependency.
+* Support for Python 3.11. The floor is Python 3.12, which gertils v0.8.0 and the newest releases of numpy, zarr and numcodecs all need, and which looptrace already requires.
 
 ## [v0.3.0] - 2026-10-13
 

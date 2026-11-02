@@ -2078,9 +2078,26 @@ description = ""
 optional = false
 python-versions = "<3.13,>=3.10"
 groups = ["main"]
+markers = "python_version == \"3.12\""
 files = [
     {file = "numpydoc_decorator-2.2.1-py3-none-any.whl", hash = "sha256:16181c97b20c2099d6fd75404bef379cc3678338d9aa8e6e8fafb3ae7adc166a"},
     {file = "numpydoc_decorator-2.2.1.tar.gz", hash = "sha256:c3b5b16bec1e7ed221adab7bd77a8a8acc0c7be1bb4e0871721b2a5d2f3145fa"},
+]
+
+[package.dependencies]
+typing_extensions = "*"
+
+[[package]]
+name = "numpydoc-decorator"
+version = "2.3.0"
+description = ""
+optional = false
+python-versions = "<3.14,>=3.10"
+groups = ["main"]
+markers = "python_version == \"3.13\""
+files = [
+    {file = "numpydoc_decorator-2.3.0-py3-none-any.whl", hash = "sha256:042bcffbcf89a120d4660f1204227dd9b597e66df5f0fd108d0bff060727d498"},
+    {file = "numpydoc_decorator-2.3.0.tar.gz", hash = "sha256:bc097eefe88975e410098c23e699de227d8df2972d8299a73538ad269b85a046"},
 ]
 
 [package.dependencies]
@@ -3716,7 +3733,10 @@ files = [
 pyconify = {version = ">=0.1.4", optional = true, markers = "extra == \"iconify\""}
 pygments = ">=2.4.0"
 qtpy = ">=2.4.0"
-typing-extensions = ">=4.5.0"
+typing-extensions = [
+    {version = ">=4.5.0", markers = "python_version < \"3.13\""},
+    {version = ">=4.12.0", markers = "python_version >= \"3.13\""},
+]
 
 [package.extras]
 cmap = ["cmap (>=0.2)"]
@@ -4191,5 +4211,5 @@ type = ["pytest-mypy"]
 
 [metadata]
 lock-version = "2.1"
-python-versions = ">=3.12,<3.13"
-content-hash = "9af1c8037606e8e8d95445f0a23d8759a61dd836dae6b811321896e7cb5a9cd5"
+python-versions = ">=3.12,<3.14"
+content-hash = "d3ce96b2690c5f5e5292789e0265111d30dfeced3c61897f1eb0b556a4fc0949"

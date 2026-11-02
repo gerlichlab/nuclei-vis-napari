@@ -14,6 +14,7 @@ classifiers = [
     "Operating System :: MacOS",
     "Operating System :: Microsoft :: Windows",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Scientific/Engineering :: Bio-Informatics",
     "Typing :: Typed",
 ]
@@ -26,7 +27,7 @@ build-backend = "poetry.core.masonry.api"
 nuclei-vis-napari = "nuclei_vis_napari:napari.yaml"
 
 [tool.poetry.dependencies]
-python = ">=3.12,<3.13"
+python = ">=3.12,<3.14"
 gertils = { git = "https://github.com/gerlichlab/gertils.git", tag = "v0.8.0" }
 numpy = "*"
 numpydoc_decorator = ">=2.2.1"
