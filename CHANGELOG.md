@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+* Type-check with `pyright` instead of `mypy`, as looptrace, gertils and spotfishing do. The package is checked strictly and the tests at the standard level.
+* Format at ruff's default line length of 88, where it was 100, as in the other repositories behind looptrace.
+
 ## [v0.3.0] - 2026-10-13
 
 ### Changed
