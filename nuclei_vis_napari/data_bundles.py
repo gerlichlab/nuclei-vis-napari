@@ -264,7 +264,7 @@ def max_project_z(img: PixelArray) -> PixelArray:  # noqa: D103
 
 def _read_csv(fp: Path) -> list[tuple[NucleusNumber, ImagePoint2D]]:
     logging.debug("Reading CSV: %s", fp)
-    df = pd.read_csv(fp, index_col=0)  # pyright: ignore[reportUnknownMemberType]
+    df = pd.read_csv(fp, index_col=0)
 
     # preserves data type of this column / field, .iterrows() seems to lose it.
     nuclei = df[NuclusDataKey.Label.value]
