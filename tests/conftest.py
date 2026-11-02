@@ -14,6 +14,10 @@ from hypothesis import HealthCheck, settings
 settings.register_profile(
     "nuclei-vis-napari", suppress_health_check=[HealthCheck.too_slow]
 )
+# Loaded unconditionally, which overrides a profile named on the command line:
+# this conftest is imported during collection, after the hypothesis plugin has
+# applied --hypothesis-profile. Anyone adding a second profile has to load it
+# here rather than on the command line.
 settings.load_profile("nuclei-vis-napari")
 
 

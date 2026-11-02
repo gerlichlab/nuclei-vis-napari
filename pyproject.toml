@@ -69,8 +69,10 @@ npe2 = "*"
 pytest = ">=7.1.0"
 typer = "*"
 # To write the format-3 stores the tests read; the package itself never imports
-# zarr, and gertils brings the version it needs.
-zarr = ">=3.1,<4"
+# zarr. Unbounded on purpose: Poetry resolves one version of a package for the
+# whole project, so a range here would bound the zarr the plugin runs on too,
+# and gertils is the one that should say which zarr it reads.
+zarr = "*"
 
 [tool.codespell]
 skip = ".git,.nox,.vscode,__pycache__,poetry.lock,*.zarr"

@@ -135,8 +135,12 @@ def test_four_dimensional_image_with_trivial_channel_axis_matches_behavior_of_th
     ),
     masks=st.one_of(gen_valid_masks_2d, gen_masks_5d__trivial_first_three),
     centers=gen_valid_centers,
+    # The value is set as an environment variable, which cannot hold a null byte
+    # and must encode; `codec` is what st.text()'s own default alphabet uses to
+    # keep lone surrogates out, and naming an alphabet would otherwise lose it.
     bad_nuc_channel=st.text(
-        alphabet=st.characters(exclude_characters="\x00"), min_size=1
+        alphabet=st.characters(codec="utf-8", exclude_characters="\x00"),
+        min_size=1,
     ),
 )
 @hyp.settings(phases=tuple(p for p in hyp.Phase if p != hyp.Phase.shrink))
