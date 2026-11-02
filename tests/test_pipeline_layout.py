@@ -110,6 +110,9 @@ def test_a_stray_non_fov_entry_in_the_images_folder_is_ignored(
     (pipeline_example / "nuc_images" / ".zgroup").write_text(
         json.dumps({"zarr_format": 2})
     )
+    (pipeline_example / "nuc_images" / "zarr.json").write_text(
+        json.dumps({"zarr_format": 3, "node_type": "group"})
+    )
     (pipeline_example / "nuc_images" / ".DS_Store").write_bytes(b"\x00")
     assert callable(get_reader(wrap_path(pipeline_example)))
 

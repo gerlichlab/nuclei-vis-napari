@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
+* Depend on `gertils` v0.8.0, which requires zarr 3, and whose `read_zarr` reads zarr format 3 as well as format 2: the plugin opens nuclei images and masks in either format.
+See [looptrace issue 579](https://github.com/gerlichlab/looptrace/issues/579), which moves looptrace to zarr 3.
 * Type-check with `pyright` instead of `mypy`, as looptrace, gertils and spotfishing do. The package is checked strictly and the tests at the standard level.
 * Format at ruff's default line length of 88, where it was 100, as in the other repositories behind looptrace.
 * ruff 0.7.4 -> 0.17.3 and pyright 1.1.411 -> 1.1.414, the newest releases, as in looptrace, gertils and the other plugins. The configuration names the rules that ruff renamed (`TC002`, `TC003`), no longer names those it removed (`ANN101`, `ANN102`), and ignores two that every rule now brings in: a copyright notice in each file (`CPY001`), as the LICENSE covers them all, and `X | None` for `Optional[X]` (`UP045`), which ruff split out of `UP007`, already ignored. pyright 1.1.414 finds nothing new. The casts of a layer raise their error themselves, instead of calling a method that raises it, so the six comments that suppressed ruff's and pyright's reports about it go; two `noqa` comments named a rule ruff no longer has (`PD901`); and the two classes that are unhashable on purpose, as they define `__eq__` without `__hash__`, tell ruff so (`PLW1641`). Four files are reformatted by ruff's newer style.
