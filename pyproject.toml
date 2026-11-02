@@ -50,7 +50,7 @@ optional = true
 [tool.poetry.group.formatting.dependencies]
 codespell = ">=2.2.4"
 # The version looptrace pins, so the projects are formatted and linted by the same ruff.
-ruff = "==0.7.4"
+ruff = "==0.17.3"
 tomli = { version = "*", markers = "python_version < '3.11'" }
 
 [tool.poetry.group.linting]
@@ -59,9 +59,9 @@ optional = true
 [tool.poetry.group.linting.dependencies]
 pandas-stubs = "*"
 # The version looptrace pins, so the projects are type-checked by the same pyright.
-pyright = "==1.1.411"
+pyright = "==1.1.414"
 # The version looptrace pins, so the projects are formatted and linted by the same ruff.
-ruff = "==0.7.4"
+ruff = "==0.17.3"
 
 [tool.poetry.group.testsuite.dependencies]
 hypothesis = { version = "*", extras = ["numpy"] }
@@ -90,7 +90,6 @@ target-version = "py312"
 select = ["ALL"]
 ignore = [
     # Missing members
-    "ANN10",  # Deprecated: Missing type annotation for self/cls in (class)method
     "D105",  # Missing docstring in magic method
     "ANN204", # Missing return type annotation for special method
 
@@ -104,15 +103,17 @@ ignore = [
     "D400",  # First line should end with a period
     "D415",  # First line should end with a period, question mark, or exclamation point
     "N818",  # Exception should be named with an Error suffix
+    "CPY001",  # Missing copyright notice at top of file: the LICENSE covers every file
     "PLR0913", # Too many arguments in function definition
     "D401", # First line of docstring should be in imperative mood
 
     # Imports and type annotations
     "ANN003",  # Missing type annotation for kwargs
     "FA100",  # Missing `from __future__ import annotations`, but uses `typing.*`
-    "TCH002",  # Move third-party import `...` into a type-checking block
-    "TCH003",  # Move standard library import `...` into a type-checking block
+    "TC002",  # Move third-party import `...` into a type-checking block
+    "TC003",  # Move standard library import `...` into a type-checking block
     "UP007",  # Use `X | Y` for type annotations
+    "UP045",  # Use `X | None` for type annotations, which ruff split out of UP007
 
     # Ruff recommends avoiding these checks when using `ruff format`. Since
     # `ruff format` is a drop-in replacement for `black`, we avoid the same

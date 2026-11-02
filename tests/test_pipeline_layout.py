@@ -36,9 +36,9 @@ def pipeline_example(tmp_path) -> Path:
 
 def test_pipeline_layout_can_be_read(pipeline_example, wrap_path):
     read_data = get_reader(wrap_path(pipeline_example))
-    assert callable(
-        read_data
-    ), f"Expected to be able to parse data from {pipeline_example}"
+    assert callable(read_data), (
+        f"Expected to be able to parse data from {pipeline_example}"
+    )
 
 
 def test_pipeline_layout_gives_same_layers_as_legacy_layout(pipeline_example):

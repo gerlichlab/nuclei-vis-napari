@@ -51,7 +51,7 @@ gen_img_pt_2d = st.tuples(gen_pos_float, gen_pos_float).map(
 )
 
 gen_valid_centers = st.tuples(
-    st.sets(gen_nuc_num).map(lambda ns: sorted(ns)), st.lists(gen_img_pt_2d)
+    st.sets(gen_nuc_num).map(sorted), st.lists(gen_img_pt_2d)
 ).map(lambda nuclei_and_points: list(zip(*nuclei_and_points, strict=False)))
 
 
@@ -158,9 +158,11 @@ def test_four_dimensional_image_with_nontrivial_channel_axis_and_non_int_nuc_cha
     with (
         mock.patch(
             "nuclei_vis_napari.data_bundles.os.getenv",
-            side_effect=lambda v: bad_nuc_channel
-            if v == LOOPTRACE_NAPARI_NUCLEI_CHANNEL_ENV_VAR
-            else os.getenv(v),
+            side_effect=lambda v: (
+                bad_nuc_channel
+                if v == LOOPTRACE_NAPARI_NUCLEI_CHANNEL_ENV_VAR
+                else os.getenv(v)
+            ),
         ),
         pytest.raises(ValueError) as error_context,  # noqa: PT011
     ):
@@ -190,9 +192,11 @@ def test_four_dimensional_image_with_nontrivial_channel_axis_and_illegal_int_nuc
     with (
         mock.patch(
             "nuclei_vis_napari.data_bundles.os.getenv",
-            side_effect=lambda v: str(bad_nuc_channel)
-            if v == LOOPTRACE_NAPARI_NUCLEI_CHANNEL_ENV_VAR
-            else os.getenv(v),
+            side_effect=lambda v: (
+                str(bad_nuc_channel)
+                if v == LOOPTRACE_NAPARI_NUCLEI_CHANNEL_ENV_VAR
+                else os.getenv(v)
+            ),
         ),
         pytest.raises(ValueError) as error_context,  # noqa: PT011
     ):
@@ -251,9 +255,11 @@ def test_four_dimensional_image_with_nontrivial_channel_axis_and_but_good_nuc_ch
     image, channel = image_and_channel
     with mock.patch(
         "nuclei_vis_napari.data_bundles.os.getenv",
-        side_effect=lambda v: str(channel)
-        if v == LOOPTRACE_NAPARI_NUCLEI_CHANNEL_ENV_VAR
-        else os.getenv(v),
+        side_effect=lambda v: (
+            str(channel)
+            if v == LOOPTRACE_NAPARI_NUCLEI_CHANNEL_ENV_VAR
+            else os.getenv(v)
+        ),
     ):
         observed = NucleiVisualisationData(image=image, masks=masks, centers=centers)
     expected = NucleiVisualisationData(

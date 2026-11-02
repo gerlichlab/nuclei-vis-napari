@@ -24,13 +24,13 @@ EXPECTED_FIELDS_OF_VIEW: list[FieldOfViewFrom1] = [
 
 def test_read_all_from_root_is_correct_on_example(wrap_path):
     images_folder = get_images_folder()
-    assert (
-        images_folder.is_dir()
-    ), f"Images folder isn't an extant directory: {images_folder}"
+    assert images_folder.is_dir(), (
+        f"Images folder isn't an extant directory: {images_folder}"
+    )
     masks_folder = get_masks_folder()
-    assert (
-        masks_folder.is_dir()
-    ), f"Masks folder isn't an extant directory: {masks_folder}"
+    assert masks_folder.is_dir(), (
+        f"Masks folder isn't an extant directory: {masks_folder}"
+    )
     read_centers_file = lambda fov: [  # noqa: E731
         (
             NucleusNumber(int(row[NuclusDataKey.Label.value])),
@@ -75,7 +75,7 @@ def test_layers_are_correct_on_example():
     def read_points_data(fp: Path) -> tuple[list[list[float | np.float64]], list[int]]:
         coordinates: list[list[float | np.float64]] = []
         labels: list[int] = []
-        df = pd.read_csv(fp, index_col=0)  # noqa: PD901
+        df = pd.read_csv(fp, index_col=0)
         for _, row in df.iterrows():
             coordinates.append(
                 [row[NuclusDataKey.CenterY.value], row[NuclusDataKey.CenterX.value]]
