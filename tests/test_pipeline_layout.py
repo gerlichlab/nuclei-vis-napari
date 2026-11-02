@@ -8,6 +8,7 @@ from typing import cast
 
 import numpy as np
 import pytest
+import zarr
 
 from nuclei_vis_napari import data_bundles, get_package_examples_folder
 from nuclei_vis_napari.data_bundles import NucleiDataSubfolders
@@ -34,14 +35,96 @@ def pipeline_example(tmp_path) -> Path:
     return root
 
 
-def test_pipeline_layout_can_be_read(pipeline_example, wrap_path):
-    read_data = get_reader(wrap_path(pipeline_example))
-    assert callable(
-        read_data
-    ), f"Expected to be able to parse data from {pipeline_example}"
+@pytest.fixture
+def pipeline_example_zarr_v3(pipeline_example) -> Path:
+    """The same folder, with every store rewritten in zarr format 3.
+
+    The bundled examples are format 2, so without this nothing in the suite
+    reads the format looptrace writes from the release that moved it to zarr 3.
+    A format-3 store carries `zarr.json` and never a `.zarray`, which is the
+    rule `read_zarr` stopped relying on.
+
+    Each store keeps the shape it had -- the images bare arrays, the masks
+    groups holding the array at `0` -- so that both of the layouts `read_zarr`
+    accepts are covered, and keeps its attributes, which real output carries.
+    """
+    for subfolder in (NucleiDataSubfolders.IMAGES, NucleiDataSubfolders.MASKS):
+        for store in sorted((pipeline_example / subfolder.value).glob("P*.zarr")):
+            _rewrite_as_zarr_v3(store)
+    return pipeline_example
 
 
-def test_pipeline_layout_gives_same_layers_as_legacy_layout(pipeline_example):
+def _rewrite_as_zarr_v3(store: Path) -> None:
+    """Replace a format-2 store with a format-3 one holding the same pixels.
+
+    Whether the source is a bare array or a group with the array at `0` is read
+    off the source rather than passed in, so the rewrite cannot quietly change
+    which of the two layouts a given store presents.
+    """
+    node = zarr.open(str(store), mode="r")
+    source_is_array = isinstance(node, zarr.Array)
+    array_node = node if source_is_array else node["0"]
+    data = np.asarray(array_node)
+    array_attrs = dict(array_node.attrs)
+    group_attrs = {} if source_is_array else dict(node.attrs)
+
+    shutil.rmtree(store)
+    if source_is_array:
+        written = zarr.create_array(store=str(store), data=data, zarr_format=3)
+    else:
+        group = zarr.open_group(str(store), mode="w", zarr_format=3)
+        group.attrs.update(group_attrs)
+        written = group.create_array("0", shape=data.shape, dtype=data.dtype)
+        written[:] = data
+    written.attrs.update(array_attrs)
+
+
+def _node_type(store: Path) -> str:
+    """The `node_type` zarr format 3 records in a store's metadata."""
+    return json.loads((store / "zarr.json").read_text())["node_type"]
+
+
+def test_the_format_3_fixture_really_writes_format_3(pipeline_example_zarr_v3):
+    """Guard the fixture, so the tests below cannot pass on format 2.
+
+    The layouts are pinned as well as the format: without that, rewriting every
+    store as a bare array would leave all the tests green while the `0` branch
+    of `read_zarr`, the one this fixture exists to reach, went untested.
+    """
+    assert not list(pipeline_example_zarr_v3.rglob(".zarray")), (
+        "A format-2 array marker survived the rewrite"
+    )
+    images = sorted((pipeline_example_zarr_v3 / "nuc_images").glob("P*.zarr"))
+    masks = sorted((pipeline_example_zarr_v3 / "nuc_masks").glob("P*.zarr"))
+    assert images, "The images subfolder held no store to check"
+    assert masks, "The masks subfolder held no store to check"
+    for store in images:
+        assert _node_type(store) == "array", f"{store} is not a bare array"
+    for store in masks:
+        assert _node_type(store) == "group", f"{store} is not a group"
+        assert _node_type(store / "0") == "array", f"{store} has no array at 0"
+
+
+@pytest.fixture(params=["pipeline_example", "pipeline_example_zarr_v3"])
+def pipeline_example_either_zarr_format(request) -> Path:
+    """The pipeline layout as bundled, in zarr format 2, and rewritten in 3.
+
+    The format must not change what the user sees, so the tests that say what
+    the reader gives run against both rather than against one each.
+    """
+    return request.getfixturevalue(request.param)
+
+
+def test_pipeline_layout_can_be_read(pipeline_example_either_zarr_format, wrap_path):
+    folder = pipeline_example_either_zarr_format
+    read_data = get_reader(wrap_path(folder))
+    assert callable(read_data), f"Expected to be able to parse data from {folder}"
+
+
+def test_pipeline_layout_gives_same_layers_as_legacy_layout(
+    pipeline_example_either_zarr_format,
+):
+    pipeline_example = pipeline_example_either_zarr_format
     observed = get_reader(pipeline_example)(pipeline_example)  # type: ignore[misc]
     expected = get_reader(LEGACY_EXAMPLE)(LEGACY_EXAMPLE)  # type: ignore[misc]
     assert len(observed) == len(expected)
@@ -107,8 +190,14 @@ def test_a_stray_non_fov_entry_in_the_images_folder_is_ignored(
     leaving it to be rediscovered by whoever first sees a folder with a stray
     file in it.
     """
+    # All three are rejected on the first character of the name, before anything
+    # opens them, so they are one case and not three; both zarr formats' markers
+    # are named to say which files a reader is likely to meet, not to add a path.
     (pipeline_example / "nuc_images" / ".zgroup").write_text(
         json.dumps({"zarr_format": 2})
+    )
+    (pipeline_example / "nuc_images" / "zarr.json").write_text(
+        json.dumps({"zarr_format": 3, "node_type": "group"})
     )
     (pipeline_example / "nuc_images" / ".DS_Store").write_bytes(b"\x00")
     assert callable(get_reader(wrap_path(pipeline_example)))

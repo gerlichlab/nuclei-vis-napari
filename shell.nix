@@ -8,7 +8,7 @@
   }) {},
   dev ? true,
 }:
-let py311 = pkgs.python311.withPackages (ps: with ps; [ numpy pandas ]);
+let py312 = pkgs.python312;
     poetryExtras = if dev then [ "coverage" "formatting" "linting" "testsuite" ] else [ ];
     poetryInstallExtras = (
       if poetryExtras == [] then ""
@@ -17,13 +17,16 @@ let py311 = pkgs.python311.withPackages (ps: with ps; [ numpy pandas ]);
 in
 pkgs.mkShell {
   name = "nuclei-vis-napari-env";
-  buildInputs = [ pkgs.poetry ];
+  buildInputs = [ pkgs.poetry ] ++ (if dev then [
+    # The pyright package from PyPI runs on Node.js; providing it here saves a download.
+    pkgs.nodejs
+  ] else []);
   shellHook = ''
     # To get this working on the lab machine, we need to modify Poetry's keyring interaction:
     # https://stackoverflow.com/questions/74438817/poetry-failed-to-unlock-the-collection
     # https://github.com/python-poetry/poetry/issues/1917
     export PYTHON_KEYRING_BACKEND=keyring.backends.null.Keyring
-    poetry env use "${py311}/bin/python"
+    poetry env use "${py312}/bin/python"
     installcmd="poetry sync -vvvv${poetryInstallExtras}"
     echo "Running installation command: $installcmd"
     eval "$installcmd"

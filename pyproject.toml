@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "nuclei-vis-napari"
-version = "0.3.0"
+version = "0.4.0"
 authors = ["Vince Reuter"]
 description = "This project facilitates viewing nuclei and nuclear masks."
 readme = "README.md"
@@ -13,8 +13,8 @@ classifiers = [
     "Operating System :: POSIX :: Linux",
     "Operating System :: MacOS",
     "Operating System :: Microsoft :: Windows",
-    "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Scientific/Engineering :: Bio-Informatics",
     "Typing :: Typed",
 ]
@@ -27,16 +27,16 @@ build-backend = "poetry.core.masonry.api"
 nuclei-vis-napari = "nuclei_vis_napari:napari.yaml"
 
 [tool.poetry.dependencies]
-python = ">=3.11,<3.13"
-gertils = { git = "https://github.com/gerlichlab/gertils.git", tag = "v0.7.0" }
+python = ">=3.12,<3.14"
+gertils = { git = "https://github.com/gerlichlab/gertils.git", tag = "v0.8.0" }
 numpy = "*"
 numpydoc_decorator = ">=2.2.1"
 pandas = "*"
-zarr = ">=2.4.12"
 
 # OS-specific dependency declarations
-# From 0.4.19, which looptrace uses while it holds numpy below 1.25, to 0.9, which needs numpy 1.25.
-napari = { version = ">=0.4.19.post1,<0.10", markers = "sys_platform == 'darwin'" }
+# From 0.5, the first release that allows numpy 2, which the locked zarr and numcodecs
+# need, to 0.9. napari 0.4.19.post1 requires numpy below 2.
+napari = { version = ">=0.5,<0.10", markers = "sys_platform == 'darwin'" }
 pyqt6 = { version = ">=6.5.0", markers = "sys_platform == 'darwin'" }
 
 [tool.poetry.group.coverage]
@@ -51,8 +51,7 @@ optional = true
 [tool.poetry.group.formatting.dependencies]
 codespell = ">=2.2.4"
 # The version looptrace pins, so the projects are formatted and linted by the same ruff.
-ruff = "==0.7.4"
-tomli = { version = "*", markers = "python_version < '3.11'" }
+ruff = "==0.17.3"
 
 [tool.poetry.group.linting]
 optional = true
@@ -60,18 +59,23 @@ optional = true
 [tool.poetry.group.linting.dependencies]
 pandas-stubs = "*"
 # The version looptrace pins, so the projects are type-checked by the same pyright.
-pyright = "==1.1.411"
+pyright = "==1.1.414"
 # The version looptrace pins, so the projects are formatted and linted by the same ruff.
-ruff = "==0.7.4"
+ruff = "==0.17.3"
 
 [tool.poetry.group.testsuite.dependencies]
 hypothesis = { version = "*", extras = ["numpy"] }
 npe2 = "*"
 pytest = ">=7.1.0"
 typer = "*"
+# Only the tests import zarr, to write the format-3 stores they read; the package
+# reads its stores through gertils, which says which zarr that takes. A dependency
+# group is no part of the installed plugin, so a range here would bound only this
+# repository's own lock, where gertils already bounds zarr.
+zarr = "*"
 
 [tool.codespell]
-skip = ".git,.mypy_cache,.nox,.vscode,__pycache__,poetry.lock,*.zarr"
+skip = ".git,.nox,.vscode,__pycache__,poetry.lock,*.zarr"
 builtin = "clear,rare,informal,usage,code,names"
 ignore-words-list = "jupyter,iff"
 check-filenames = true
@@ -85,13 +89,12 @@ reportUnnecessaryTypeIgnoreComment = "error"
 
 [tool.ruff]
 # No line-length: ruff's default of 88, as in the other repositories behind looptrace.
-target-version = "py311"
+target-version = "py312"
 
 [tool.ruff.lint]
 select = ["ALL"]
 ignore = [
     # Missing members
-    "ANN10",  # Deprecated: Missing type annotation for self/cls in (class)method
     "D105",  # Missing docstring in magic method
     "ANN204", # Missing return type annotation for special method
 
@@ -105,15 +108,17 @@ ignore = [
     "D400",  # First line should end with a period
     "D415",  # First line should end with a period, question mark, or exclamation point
     "N818",  # Exception should be named with an Error suffix
+    "CPY001",  # Missing copyright notice at top of file: the LICENSE covers every file
     "PLR0913", # Too many arguments in function definition
     "D401", # First line of docstring should be in imperative mood
 
     # Imports and type annotations
     "ANN003",  # Missing type annotation for kwargs
     "FA100",  # Missing `from __future__ import annotations`, but uses `typing.*`
-    "TCH002",  # Move third-party import `...` into a type-checking block
-    "TCH003",  # Move standard library import `...` into a type-checking block
+    "TC002",  # Move third-party import `...` into a type-checking block
+    "TC003",  # Move standard library import `...` into a type-checking block
     "UP007",  # Use `X | Y` for type annotations
+    "UP045",  # Use `X | None` for type annotations, which ruff split out of UP007
 
     # Ruff recommends avoiding these checks when using `ruff format`. Since
     # `ruff format` is a drop-in replacement for `black`, we avoid the same

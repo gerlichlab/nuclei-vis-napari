@@ -32,7 +32,7 @@ class NapariLayerType(Enum):
     ),
 )
 @dataclasses.dataclass(kw_only=True, frozen=True, eq=False)
-class NapariLayer:  # noqa: D101
+class NapariLayer:  # noqa: D101, PLW1641
     data: LayerData
     parameters: LayerParams
     get_type: NapariLayerType
@@ -59,27 +59,27 @@ class NapariLayer:  # noqa: D101
         return self._is_of_type(NapariLayerType.Points)
 
     @property
-    def as_image(self) -> tuple[LayerData, LayerParams, Literal["image"]]:  # type: ignore[return]
+    def as_image(self) -> tuple[LayerData, LayerParams, Literal["image"]]:
         """Cast this layer as an image layer, flattening to tuple."""
         if self.is_image:
             return self.data, self.parameters, "image"
-        self._raise_cast_error(NapariLayerType.Image)  # noqa: RET503
+        raise self._cast_error(NapariLayerType.Image)
 
     @property
-    def as_labels(self) -> tuple[LayerData, LayerParams, Literal["labels"]]:  # type: ignore[return]
+    def as_labels(self) -> tuple[LayerData, LayerParams, Literal["labels"]]:
         """Cast this layer as a labels layer, flattening to tuple."""
         if self.is_labels:
             return self.data, self.parameters, "labels"
-        self._raise_cast_error(NapariLayerType.Labels)  # noqa: RET503
+        raise self._cast_error(NapariLayerType.Labels)
 
     @property
-    def as_points(self) -> tuple[LayerData, LayerParams, Literal["points"]]:  # type: ignore[return]
+    def as_points(self) -> tuple[LayerData, LayerParams, Literal["points"]]:
         """Cast this layer as a points layer, flattening to tuple."""
         if self.is_points:
             return self.data, self.parameters, "points"
-        self._raise_cast_error(NapariLayerType.Points)  # noqa: RET503
+        raise self._cast_error(NapariLayerType.Points)
 
-    def _raise_cast_error(self, target_type: NapariLayerType) -> None:
-        raise NotImplementedError(
+    def _cast_error(self, target_type: NapariLayerType) -> NotImplementedError:
+        return NotImplementedError(
             f"Cannot cast {self.get_type.value} layer as {target_type.value} layer"
         )

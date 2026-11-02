@@ -39,7 +39,7 @@ __Dimensionality...__
 * Each relevant file, regardless of which kind of data are inside, should have a basename like `PXXXX`, where `XXXX` corresponds to the 1-based integer index of the field of view, left-padded with zeroes, e.g. P0001.
 * Each image or masks file should have a `.zarr` extension.
 * Each points/labels file should have a `.nuclear_masks.csv` extension.
-* Each `.zarr` should either have a `.zarray` immediately inside it, or have a single `0` subfolder which has a `.zarray` inside it.
+* Each `.zarr` should either be an array itself, or be a group with the array in a single `0` subfolder. Either zarr format will do: format 2 marks an array with `.zarray` and a group with `.zgroup`, format 3 marks both with `zarr.json`.
 * In general, you probably want the fields of view to match up among the three types of files involved (images, masks, points/labels), and to be numbered $1, 2, ..., N$, $N$ being the number of fields of view in your experiment (or whatever subset of the experiment you want to visualise). 
 * Each image or masks ZARR should in general be 2D or 5D, each of the first three axes having length 1 if 5D.
 * Each points/labels file should have first column unnamed, just as row index; other columns should be `label` (unique per row, natural numbers), then `yc` and `xc` as nonnegative real numbers giving 2D coordinates of nucleus center.

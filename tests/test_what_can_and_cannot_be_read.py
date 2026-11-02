@@ -26,9 +26,9 @@ class FileOmissionSpecification:
 @pytest.mark.parametrize("example_folder", EXAMPLE_FOLDERS)
 def test_each_example_can_be_read(example_folder, wrap_path):
     read_data = get_reader(wrap_path(example_folder))
-    assert callable(
-        read_data
-    ), f"Expected to be able to parse data from {example_folder} but couldn't"
+    assert callable(read_data), (
+        f"Expected to be able to parse data from {example_folder} but couldn't"
+    )
 
 
 @pytest.mark.parametrize("example_folder", EXAMPLE_FOLDERS)
@@ -54,9 +54,9 @@ def test_extra_files_and_folders_are_ignored(tmp_path, wrap_path, example_folder
 
     # Get the data reader and check that it's callable.
     read_data = get_reader(wrap_path(data_home))
-    assert callable(
-        read_data
-    ), f"Expected to be able to parse data from {data_home} but couldn't"
+    assert callable(read_data), (
+        f"Expected to be able to parse data from {data_home} but couldn't"
+    )
 
 
 @pytest.mark.parametrize(
@@ -80,13 +80,13 @@ def test_any_missing_file_means_data_cannot_be_read(tmp_path, wrap_path, omit_sp
     assert sum(1 for _ in tmp_path.iterdir()) == len(candidate_paths) - num_omit
     read_data = get_reader(wrap_path(tmp_path))
     if num_omit == 0:
-        assert callable(
-            read_data
-        ), "Failed to get callable reader even when omitting nothing!"
+        assert callable(read_data), (
+            "Failed to get callable reader even when omitting nothing!"
+        )
     else:
-        assert (
-            read_data is None
-        ), f"Got non-null reader when omitting {num_omit} required element(s): {', '.join(omit_spec.omissions)}"
+        assert read_data is None, (
+            f"Got non-null reader when omitting {num_omit} required element(s): {', '.join(omit_spec.omissions)}"
+        )
 
 
 @pytest.mark.parametrize(
