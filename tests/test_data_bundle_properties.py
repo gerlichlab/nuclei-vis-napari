@@ -135,7 +135,9 @@ def test_four_dimensional_image_with_trivial_channel_axis_matches_behavior_of_th
     ),
     masks=st.one_of(gen_valid_masks_2d, gen_masks_5d__trivial_first_three),
     centers=gen_valid_centers,
-    bad_nuc_channel=st.text(min_size=1),
+    bad_nuc_channel=st.text(
+        alphabet=st.characters(exclude_characters="\x00"), min_size=1
+    ),
 )
 @hyp.settings(phases=tuple(p for p in hyp.Phase if p != hyp.Phase.shrink))
 def test_four_dimensional_image_with_nontrivial_channel_axis_and_non_int_nuc_channel(
@@ -156,13 +158,8 @@ def test_four_dimensional_image_with_nontrivial_channel_axis_and_non_int_nuc_cha
 
     # Verify the property under test, that the appropriate error and message arise in this context.
     with (
-        mock.patch(
-            "nuclei_vis_napari.data_bundles.os.getenv",
-            side_effect=lambda v: (
-                bad_nuc_channel
-                if v == LOOPTRACE_NAPARI_NUCLEI_CHANNEL_ENV_VAR
-                else os.getenv(v)
-            ),
+        mock.patch.dict(
+            os.environ, {LOOPTRACE_NAPARI_NUCLEI_CHANNEL_ENV_VAR: bad_nuc_channel}
         ),
         pytest.raises(ValueError) as error_context,  # noqa: PT011
     ):
@@ -190,13 +187,8 @@ def test_four_dimensional_image_with_nontrivial_channel_axis_and_illegal_int_nuc
     hyp.assume(bad_nuc_channel < 0 or bad_nuc_channel >= image.shape[0])
     assert len(image.shape) == 4, f"Generated image isn't 4D, but {len(image.shape)}D"  # noqa: PLR2004
     with (
-        mock.patch(
-            "nuclei_vis_napari.data_bundles.os.getenv",
-            side_effect=lambda v: (
-                str(bad_nuc_channel)
-                if v == LOOPTRACE_NAPARI_NUCLEI_CHANNEL_ENV_VAR
-                else os.getenv(v)
-            ),
+        mock.patch.dict(
+            os.environ, {LOOPTRACE_NAPARI_NUCLEI_CHANNEL_ENV_VAR: str(bad_nuc_channel)}
         ),
         pytest.raises(ValueError) as error_context,  # noqa: PT011
     ):
@@ -253,13 +245,8 @@ def test_four_dimensional_image_with_nontrivial_channel_axis_and_but_good_nuc_ch
     image_and_channel, masks, centers
 ):
     image, channel = image_and_channel
-    with mock.patch(
-        "nuclei_vis_napari.data_bundles.os.getenv",
-        side_effect=lambda v: (
-            str(channel)
-            if v == LOOPTRACE_NAPARI_NUCLEI_CHANNEL_ENV_VAR
-            else os.getenv(v)
-        ),
+    with mock.patch.dict(
+        os.environ, {LOOPTRACE_NAPARI_NUCLEI_CHANNEL_ENV_VAR: str(channel)}
     ):
         observed = NucleiVisualisationData(image=image, masks=masks, centers=centers)
     expected = NucleiVisualisationData(
