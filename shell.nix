@@ -8,7 +8,7 @@
   }) {},
   dev ? true,
 }:
-let py312 = pkgs.python312.withPackages (ps: with ps; [ numpy pandas ]);
+let py312 = pkgs.python312;
     poetryExtras = if dev then [ "coverage" "formatting" "linting" "testsuite" ] else [ ];
     poetryInstallExtras = (
       if poetryExtras == [] then ""
