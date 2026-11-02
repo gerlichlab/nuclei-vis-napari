@@ -31,7 +31,6 @@ gertils = { git = "https://github.com/gerlichlab/gertils.git", tag = "v0.8.0" }
 numpy = "*"
 numpydoc_decorator = ">=2.2.1"
 pandas = "*"
-zarr = ">=2.4.12"
 
 # OS-specific dependency declarations
 # From 0.4.19, which looptrace uses while it holds numpy below 1.25, to 0.9, which needs numpy 1.25.
@@ -68,6 +67,9 @@ hypothesis = { version = "*", extras = ["numpy"] }
 npe2 = "*"
 pytest = ">=7.1.0"
 typer = "*"
+# To write the format-3 stores the tests read; the package itself never imports
+# zarr, and gertils brings the version it needs.
+zarr = ">=3.1,<4"
 
 [tool.codespell]
 skip = ".git,.mypy_cache,.nox,.vscode,__pycache__,poetry.lock,*.zarr"

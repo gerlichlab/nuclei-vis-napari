@@ -8,6 +8,7 @@ from typing import cast
 
 import numpy as np
 import pytest
+import zarr
 
 from nuclei_vis_napari import data_bundles, get_package_examples_folder
 from nuclei_vis_napari.data_bundles import NucleiDataSubfolders
@@ -32,6 +33,71 @@ def pipeline_example(tmp_path) -> Path:
     shutil.copytree(LEGACY_EXAMPLE, root)
     (root / "_nuclear_masks_visualisation").rename(root / "nuclear_masks_visualisation")
     return root
+
+
+@pytest.fixture
+def pipeline_example_zarr_v3(pipeline_example) -> Path:
+    """The same folder, with every store rewritten in zarr format 3.
+
+    The bundled examples are format 2, so without this nothing in the suite
+    reads the format looptrace writes from the release that moved it to zarr 3.
+    A format-3 store carries `zarr.json` and never a `.zarray`, which is the
+    rule `read_zarr` stopped relying on.
+
+    The images become bare arrays and the masks groups holding the array at
+    `0`, so that both of the layouts `read_zarr` accepts are covered.
+    """
+    for store in sorted((pipeline_example / "nuc_images").glob("P*.zarr")):
+        _rewrite_as_zarr_v3(store, as_group=False)
+    for store in sorted((pipeline_example / "nuc_masks").glob("P*.zarr")):
+        _rewrite_as_zarr_v3(store, as_group=True)
+    return pipeline_example
+
+
+def _rewrite_as_zarr_v3(store: Path, *, as_group: bool) -> None:
+    """Replace a format-2 store with a format-3 one holding the same pixels."""
+    node = zarr.open(str(store), mode="r")
+    # The bundled images are bare arrays and the bundled masks groups holding
+    # the array at `0`; both shapes are rewritten, not flattened to one.
+    data = np.asarray(node if isinstance(node, zarr.Array) else node["0"])
+    shutil.rmtree(store)
+    if as_group:
+        group = zarr.open_group(str(store), mode="w", zarr_format=3)
+        array = group.create_array("0", shape=data.shape, dtype=data.dtype)
+        array[:] = data
+    else:
+        zarr.create_array(store=str(store), data=data, zarr_format=3)
+
+
+def test_the_format_3_fixture_really_writes_format_3(pipeline_example_zarr_v3):
+    """Guard the fixture itself, so the tests below cannot pass on format 2."""
+    stores = sorted(pipeline_example_zarr_v3.rglob("P*.zarr"))
+    assert stores, "No store was found to check"
+    assert not list(pipeline_example_zarr_v3.rglob(".zarray")), (
+        "A format-2 array marker survived the rewrite"
+    )
+    for store in stores:
+        assert (store / "zarr.json").is_file(), f"No zarr.json in {store}"
+
+
+def test_zarr_format_3_stores_can_be_read(pipeline_example_zarr_v3, wrap_path):
+    read_data = get_reader(wrap_path(pipeline_example_zarr_v3))
+    assert callable(read_data), (
+        f"Expected to be able to parse data from {pipeline_example_zarr_v3}"
+    )
+
+
+def test_zarr_format_3_gives_the_same_layers_as_format_2(pipeline_example_zarr_v3):
+    """The format must not change what the user sees."""
+    observed = get_reader(pipeline_example_zarr_v3)(pipeline_example_zarr_v3)  # type: ignore[misc]
+    expected = get_reader(LEGACY_EXAMPLE)(LEGACY_EXAMPLE)  # type: ignore[misc]
+    assert len(observed) == len(expected)
+    for (obs_data, obs_params, obs_type), (exp_data, exp_params, exp_type) in zip(
+        observed, expected, strict=True
+    ):
+        assert obs_type == exp_type
+        assert obs_params == exp_params
+        assert np.array_equal(obs_data, exp_data)
 
 
 def test_pipeline_layout_can_be_read(pipeline_example, wrap_path):
