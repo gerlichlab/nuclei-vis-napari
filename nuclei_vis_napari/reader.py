@@ -9,7 +9,6 @@ from typing import Literal, NamedTuple, Optional
 
 import numpy as np
 from gertils.types import FieldOfViewFrom1, PixelArray
-from numpydoc_decorator import doc
 
 from .data_bundles import NucleiDataSubfolders, NucleiVisualisationData
 from .napari_layer import LayerData, LayerParams, NapariLayer, NapariLayerType
@@ -87,16 +86,23 @@ def _why_not_readable(path: Path) -> Optional[_Refusal]:
     return None
 
 
-@doc(
-    summary=(
-        "This is the main hook required by napari / napari plugins to provide a Reader plugin."
-    ),
-    parameters=dict(
-        path="Path to the folder (with proper substructure) with nuclei data to view"
-    ),
-    returns="A callable that accepts a list of paths and returns the layers for nuclei vis",
-)
-def get_reader(path: PathOrPaths) -> Optional[Reader]:  # noqa: D103
+def get_reader(path: PathOrPaths) -> Optional[Reader]:
+    """The main hook required by napari / napari plugins to provide a Reader plugin.
+
+    Parameters
+    ----------
+    path : PathOrPaths
+        Path to the folder (with proper substructure) with nuclei data to
+        view.
+
+    Returns
+    -------
+    Reader or None
+        A callable that accepts a list of paths and returns the layers for
+        nuclei vis.
+
+    """
+
     def do_not_parse(why: str, *, level: int = logging.DEBUG) -> None:
         logging.log(level, "%s, cannot read looptrace nuclei visualisation data", why)
 
@@ -150,19 +156,27 @@ def get_reader(path: PathOrPaths) -> Optional[Reader]:  # noqa: D103
     return parse
 
 
-@doc(
-    summary="Build the multiple layers (image, masks, points) to look at nuclei in napari.",
-    parameters=dict(
-        bundles="Mapping from FOV to the bundle of data needed to visualise its data"
-    ),
-    raises=dict(
-        RuntimeError="If images and masks aren't entirely uniform w.r.t. shape"
-    ),
-    returns="The layers needed to visualise nuclei across all FOVs",
-)
-def build_layers(  # noqa: D103
+def build_layers(
     bundles: Mapping[FieldOfViewFrom1, NucleiVisualisationData],
 ) -> tuple[NapariLayer, NapariLayer, NapariLayer]:
+    """Build the multiple layers (image, masks, points) to look at nuclei in napari.
+
+    Parameters
+    ----------
+    bundles : Mapping[FieldOfViewFrom1, NucleiVisualisationData]
+        Mapping from FOV to the bundle of data needed to visualise its data.
+
+    Returns
+    -------
+    tuple[NapariLayer, NapariLayer, NapariLayer]
+        The layers needed to visualise nuclei across all FOVs.
+
+    Raises
+    ------
+    RuntimeError
+        If images and masks aren't entirely uniform w.r.t. shape.
+
+    """
     if not bundles:
         # get_reader refuses this case, so reaching here is a programming error;
         # it still gets its own message rather than numpy's "need at least one

@@ -13,7 +13,6 @@ from gertils.geometry import ImagePoint2D
 from gertils.pathtools import find_single_path_by_fov
 from gertils.types import FieldOfViewFrom1, NucleusNumber, PixelArray
 from gertils.zarr_tools import read_zarr
-from numpydoc_decorator import doc
 
 from .type_aliases import PathLike
 
@@ -130,20 +129,24 @@ class NucleiDataSubfolders(Enum):
         return next((c for c in candidates if c.is_dir()), candidates[0])
 
 
-@doc(
-    summary="Bundle the data needed to visualise nuclei.",
-    parameters=dict(
-        image="The array of pixel values, e.g. of DAPI staining in a particular FOV",
-        masks="""
-            The array of region-defining label indicators which represent nuclei regions.
-            The values should be nonnegative integers, with 0 representing portions of the
-            image outside a nucleus, and nonzero values corresponding to a nucleus.
-        """,
-        centers="The list of centroids, one for each nuclear mask",
-    ),
-)
 @dataclass(frozen=True, kw_only=True, eq=False)
-class NucleiVisualisationData:  # noqa: D101, PLW1641
+class NucleiVisualisationData:  # noqa: PLW1641
+    """Bundle the data needed to visualise nuclei.
+
+    Parameters
+    ----------
+    image : PixelArray
+        The array of pixel values, e.g. of DAPI staining in a particular FOV.
+    masks : PixelArray
+        The array of region-defining label indicators which represent nuclei
+        regions. The values should be nonnegative integers, with 0
+        representing portions of the image outside a nucleus, and nonzero
+        values corresponding to a nucleus.
+    centers : list of tuple[NucleusNumber, ImagePoint2D]
+        The list of centroids, one for each nuclear mask.
+
+    """
+
     image: PixelArray
     masks: PixelArray
     centers: list[tuple[NucleusNumber, ImagePoint2D]]
@@ -220,16 +223,20 @@ class NucleiVisualisationData:  # noqa: D101, PLW1641
             )
 
 
-@doc(
-    summary=(
-        "Read (from environment variable) the image channel in which to find nuclei signal."
-    ),
-    raises=dict(
-        ValueError="When the environment variable value's set to a non-integer-like",
-    ),
-    returns="The integer value of image channel in which to find nuclei signal",
-)
 def _determine_nuclei_channel() -> int:
+    """Read (from environment variable) the image channel in which to find nuclei signal.
+
+    Returns
+    -------
+    int
+        The integer value of image channel in which to find nuclei signal.
+
+    Raises
+    ------
+    ValueError
+        When the environment variable value's set to a non-integer-like.
+
+    """
     nuc_channel = os.getenv(LOOPTRACE_NAPARI_NUCLEI_CHANNEL_ENV_VAR)
     if nuc_channel is None or nuc_channel == "":
         raise ValueError(
@@ -246,15 +253,26 @@ def _determine_nuclei_channel() -> int:
         ) from e
 
 
-@doc(
-    summary=(
-        "Max project images z-stack along the z-axis, assumed to be axis 0 (first axis)."
-    ),
-    parameters=dict(img="The image stack to max-project along z"),
-    raises=dict(ValueError="If the given image isn't 3D (z-stack of 2D images)"),
-    returns="Array of 1 dimension less than input, reducing first dimension by taking maxima along it",
-)
-def max_project_z(img: PixelArray) -> PixelArray:  # noqa: D103
+def max_project_z(img: PixelArray) -> PixelArray:
+    """Max project images z-stack along the z-axis, assumed to be axis 0 (first axis).
+
+    Parameters
+    ----------
+    img : PixelArray
+        The image stack to max-project along z.
+
+    Returns
+    -------
+    PixelArray
+        Array of 1 dimension less than input, reducing first dimension by
+        taking maxima along it.
+
+    Raises
+    ------
+    ValueError
+        If the given image isn't 3D (z-stack of 2D images).
+
+    """
     if len(np.shape(img)) != 3:  # noqa: PLR2004
         raise ValueError(
             f"Image to max-z-project must have 3 dimensions! Got {len(np.shape(img))}"

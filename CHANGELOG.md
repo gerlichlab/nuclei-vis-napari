@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Removed
+* The dependency on numpydoc_decorator, whose newest release allows only Python below 3.14. See [looptrace issue 584](https://github.com/gerlichlab/looptrace/issues/584). Each docstring its `@doc` wrote when a module was imported is now written in the source, so ruff's docstring rules check it and an editor shows it. Four summaries that `@doc` wrapped over two lines take one line, and `get_reader`'s summary no longer starts with "This is", which ruff's docstring rules refuse. Where `@doc` expanded a type from an annotation, the docstring names the type alias instead: `PathOrPaths` for `get_reader`'s path, `Reader or None` for what it returns, and `PixelArray` for the images and masks of `NucleiVisualisationData` and for `max_project_z`. The type information for numpydoc_decorator in `typings/` goes too, with ruff's ignores for it. numpydoc_decorator stays in the lock until gertils drops it too.
+
 ## [v0.4.0] - 2026-11-02
 
 ### Added
