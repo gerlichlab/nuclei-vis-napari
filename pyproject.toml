@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "nuclei-vis-napari"
-version = "0.4.0"
+version = "0.5.0"
 authors = ["Vince Reuter"]
 description = "This project facilitates viewing nuclei and nuclear masks."
 readme = "README.md"
@@ -15,6 +15,7 @@ classifiers = [
     "Operating System :: Microsoft :: Windows",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Topic :: Scientific/Engineering :: Bio-Informatics",
     "Typing :: Typed",
 ]
@@ -27,16 +28,15 @@ build-backend = "poetry.core.masonry.api"
 nuclei-vis-napari = "nuclei_vis_napari:napari.yaml"
 
 [tool.poetry.dependencies]
-python = ">=3.12,<3.14"
-gertils = { git = "https://github.com/gerlichlab/gertils.git", tag = "v0.8.0" }
+python = ">=3.12,<3.15"
+gertils = { git = "https://github.com/gerlichlab/gertils.git", tag = "v0.9.0" }
 numpy = "*"
-numpydoc_decorator = ">=2.2.1"
 pandas = "*"
 
 # OS-specific dependency declarations
 # From 0.5, the first release that allows numpy 2, which the locked zarr and numcodecs
-# need, to 0.9. napari 0.4.19.post1 requires numpy below 2.
-napari = { version = ">=0.5,<0.10", markers = "sys_platform == 'darwin'" }
+# need, to 0.10. napari 0.4.19.post1 requires numpy below 2.
+napari = { version = ">=0.5,<0.11", markers = "sys_platform == 'darwin'" }
 pyqt6 = { version = ">=6.5.0", markers = "sys_platform == 'darwin'" }
 
 [tool.poetry.group.coverage]
@@ -147,12 +147,6 @@ ignore = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"typings/*" = [
-    # Stubs copy the signatures of third-party code, which we can't change.
-    "FBT001",  # Boolean-typed positional argument in function definition
-    "FBT002",  # Boolean default positional argument in function definition
-    "PLR0913",  # Too many arguments in function definition
-]
 "tests/*" = [
     # Ignore some groups of checks in our test code.
     "ANN",  # Type annotations

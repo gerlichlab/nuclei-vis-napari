@@ -12,24 +12,30 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.12", "3.13"]
+        python-version: ["3.12", "3.13", "3.14"]
         os: [ubuntu-22.04]
     runs-on: ${{ matrix.os }}
 
     steps:
       - uses: actions/checkout@v3
       - name: Set up Python ${{ matrix.python-version }}
+        id: setup-python
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
       - name: Set up Poetry
         uses: snok/install-poetry@v1    # v1.3.4 at time of adoption
+        with:
+          # The environment goes in the checkout, at one path on every OS, for the
+          # cache below; Poetry's own cache folder differs between them.
+          virtualenvs-in-project: true
       - uses: actions/cache@v3
         with:
-          path: |
-            ~/.cache/pypoetry/virtualenvs
-            ~/.cache/pytest
-          key: ${{ runner.os }}-python-${{ matrix.python-version }}-poetry-format-${{ hashFiles('poetry.lock') }}
+          path: .venv
+          # Keyed on the full Python version, such as 3.12.11: an environment points at
+          # the Python that made it, which the runner drops when its image moves to the
+          # next patch release.
+          key: ${{ runner.os }}-python-${{ steps.setup-python.outputs.python-version }}-poetry-format-${{ hashFiles('poetry.lock') }}
       - name: Install project
         run: poetry sync --no-interaction --with formatting
       - name: Run codespell

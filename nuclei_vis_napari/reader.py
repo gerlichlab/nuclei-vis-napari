@@ -9,7 +9,6 @@ from typing import Literal, NamedTuple, Optional
 
 import numpy as np
 from gertils.types import FieldOfViewFrom1, PixelArray
-from numpydoc_decorator import doc
 
 from .data_bundles import NucleiDataSubfolders, NucleiVisualisationData
 from .napari_layer import LayerData, LayerParams, NapariLayer, NapariLayerType
@@ -87,16 +86,23 @@ def _why_not_readable(path: Path) -> Optional[_Refusal]:
     return None
 
 
-@doc(
-    summary=(
-        "This is the main hook required by napari / napari plugins to provide a Reader plugin."
-    ),
-    parameters=dict(
-        path="Path to the folder (with proper substructure) with nuclei data to view"
-    ),
-    returns="A callable that accepts a list of paths and returns the layers for nuclei vis",
-)
-def get_reader(path: PathOrPaths) -> Optional[Reader]:  # noqa: D103
+def get_reader(path: PathOrPaths) -> Optional[Reader]:
+    """The main hook required by napari / napari plugins to provide a Reader plugin.
+
+    Parameters
+    ----------
+    path : PathOrPaths
+        Path to the folder (with proper substructure) with nuclei data to
+        view.
+
+    Returns
+    -------
+    Reader or None
+        A callable that accepts a list of paths and returns the layers for
+        nuclei vis.
+
+    """
+
     def do_not_parse(why: str, *, level: int = logging.DEBUG) -> None:
         logging.log(level, "%s, cannot read looptrace nuclei visualisation data", why)
 
@@ -150,19 +156,29 @@ def get_reader(path: PathOrPaths) -> Optional[Reader]:  # noqa: D103
     return parse
 
 
-@doc(
-    summary="Build the multiple layers (image, masks, points) to look at nuclei in napari.",
-    parameters=dict(
-        bundles="Mapping from FOV to the bundle of data needed to visualise its data"
-    ),
-    raises=dict(
-        RuntimeError="If images and masks aren't entirely uniform w.r.t. shape"
-    ),
-    returns="The layers needed to visualise nuclei across all FOVs",
-)
-def build_layers(  # noqa: D103
+def build_layers(
     bundles: Mapping[FieldOfViewFrom1, NucleiVisualisationData],
 ) -> tuple[NapariLayer, NapariLayer, NapariLayer]:
+    """Build the multiple layers (image, masks, points) to look at nuclei in napari.
+
+    Parameters
+    ----------
+    bundles : Mapping[FieldOfViewFrom1, NucleiVisualisationData]
+        Mapping from FOV to the bundle of data needed to visualise its data.
+
+    Returns
+    -------
+    tuple[NapariLayer, NapariLayer, NapariLayer]
+        The layers needed to visualise nuclei across all FOVs.
+
+    Raises
+    ------
+    RuntimeError
+        If images and masks aren't entirely uniform w.r.t. shape.
+    ValueError
+        If there are no bundles.
+
+    """
     if not bundles:
         # get_reader refuses this case, so reaching here is a programming error;
         # it still gets its own message rather than numpy's "need at least one
@@ -176,18 +192,20 @@ def build_layers(  # noqa: D103
     nuclei_points: list[list[float]] = []
     nuclei_labels: list[int] = []
     image_shape: Optional[tuple[int, ...]] = None
-    for i, (_, visdata) in enumerate(sorted(bundles.items(), key=itemgetter(0))):
+    # A point's first coordinate is its position on napari's slider, which counts
+    # the fields of view from 0 in order; an error names the field of view itself.
+    for i, (fov, visdata) in enumerate(sorted(bundles.items(), key=itemgetter(0))):
         img_shape = np.shape(visdata.image)
         if image_shape is None:
             image_shape = img_shape
         if img_shape != image_shape:
             raise RuntimeError(
-                f"Image shape for FOV {i} doesn't match previous: {img_shape} != {image_shape}"
+                f"Image shape for FOV {fov.get} doesn't match previous: {img_shape} != {image_shape}"
             )
         masks_shape = np.shape(visdata.masks)
         if masks_shape != image_shape:
             raise RuntimeError(
-                f"Masks shape for FOV {i} doesn't match previous: {masks_shape} != {image_shape}"
+                f"Masks shape for FOV {fov.get} doesn't match previous: {masks_shape} != {image_shape}"
             )
         images.append(visdata.image)
         masks.append(visdata.masks)

@@ -27,7 +27,19 @@ MANIFEST = Path(__file__).resolve().parents[1] / "nuclei_vis_napari" / "napari.y
 def plugin_manager():
     """A manager with just this plugin's manifest registered."""
     pm = npe2.PluginManager()
-    pm.register(npe2.PluginManifest.from_file(MANIFEST))
+    under_test = npe2.PluginManifest.from_file(MANIFEST)
+    # npe2 compares napari's version as text, so up to npe2 0.10.1 at least it takes
+    # napari 0.10 for a release before 0.4.16, and discovers every installed plugin as
+    # the manager is made. The others go, so that this plugin is the only one, as with
+    # napari 0.9. This one, if discovered, is the installed plugin: it can't be
+    # registered twice, and it has to be the manifest under test.
+    discovered = {manifest.name: manifest for manifest in pm.iter_manifests()}
+    for name in discovered.keys() - {under_test.name}:
+        pm.unregister(name)
+    if under_test.name not in discovered:
+        pm.register(under_test)
+    elif discovered[under_test.name].model_dump() != under_test.model_dump():
+        pytest.fail(f"The installed plugin's manifest isn't {MANIFEST}; reinstall it")
     return pm
 
 

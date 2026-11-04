@@ -4,6 +4,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.5.0] - 2026-11-04
+
+### Added
+* Support for Python 3.14, alongside 3.12 and 3.13, as gertils v0.9.0 allows it. CI runs the tests, the formatting check and the linting on all three.
+* Support for napari 0.10 on macOS: the plugin allows napari 0.5 to 0.10. In napari 0.10, the example folder opens with its image, masks and points, on Python 3.12 and 3.14.
+
+### Changed
+* Depend on `gertils` v0.9.0, which no longer depends on numpydoc_decorator and allows Python 3.14.
+* The lock is updated to the newest releases, among them napari 0.10.0, npe2 0.10.1 and PyQt6 6.12.
+
+### Removed
+* The dependency on numpydoc_decorator, whose newest release allows only Python below 3.14. See [looptrace issue 584](https://github.com/gerlichlab/looptrace/issues/584). Each docstring its `@doc` wrote when a module was imported is now written in the source, so ruff's docstring rules check it and an editor shows it. A test checks what `@doc` checked as it wrote them: that each Parameters section names the parameters, or a dataclass's fields, in order, with their defaults. Four summaries that `@doc` wrapped over two lines take one line, and `get_reader`'s summary no longer starts with "This is", which ruff's docstring rules refuse. Where `@doc` expanded a type from an annotation, the docstring names the type alias instead: `PathOrPaths` for `get_reader`'s path, `Reader or None` for what it returns, and `PixelArray` for the images and masks of `NucleiVisualisationData` and for `max_project_z`. The type information for numpydoc_decorator in `typings/` goes too, with ruff's ignores for it. With gertils v0.9.0, which drops it too, it leaves the lock.
+
+### Fixed
+* When the images or masks of the fields of view differ in shape, the error names the field of view, instead of its position among them counted from 0: with fields of view 1, 3 and 7, a mismatch in 7 said "FOV 2". `build_layers`' docstring names the `ValueError` it raises for no fields of view.
+
 ## [v0.4.0] - 2026-11-02
 
 ### Added

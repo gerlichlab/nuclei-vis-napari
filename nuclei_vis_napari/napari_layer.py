@@ -5,7 +5,6 @@ from enum import Enum
 from typing import Literal
 
 import numpy.typing as npt
-from numpydoc_decorator import doc
 
 LayerData = npt.ArrayLike
 LayerParams = dict[str, object]
@@ -23,16 +22,21 @@ class NapariLayerType(Enum):
     Vectors = "vectors"
 
 
-@doc(
-    summary="More name-oriented and typed bundle of data for a Napari layer",
-    parameters=dict(
-        data="The actual data to visualise for the Napari layer",
-        parameters="The parameters to pass to the layer constructor",
-        get_type="Representation of one of the few valid Napari layer types",
-    ),
-)
 @dataclasses.dataclass(kw_only=True, frozen=True, eq=False)
-class NapariLayer:  # noqa: D101, PLW1641
+class NapariLayer:  # noqa: PLW1641
+    """More name-oriented and typed bundle of data for a Napari layer.
+
+    Parameters
+    ----------
+    data : array_like
+        The actual data to visualise for the Napari layer.
+    parameters : dict[str, object]
+        The parameters to pass to the layer constructor.
+    get_type : NapariLayerType
+        Representation of one of the few valid Napari layer types.
+
+    """
+
     data: LayerData
     parameters: LayerParams
     get_type: NapariLayerType
