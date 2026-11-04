@@ -175,6 +175,8 @@ def build_layers(
     ------
     RuntimeError
         If images and masks aren't entirely uniform w.r.t. shape.
+    ValueError
+        If there are no bundles.
 
     """
     if not bundles:
@@ -190,18 +192,20 @@ def build_layers(
     nuclei_points: list[list[float]] = []
     nuclei_labels: list[int] = []
     image_shape: Optional[tuple[int, ...]] = None
-    for i, (_, visdata) in enumerate(sorted(bundles.items(), key=itemgetter(0))):
+    # A point's first coordinate is its position on napari's slider, which counts
+    # the fields of view from 0 in order; an error names the field of view itself.
+    for i, (fov, visdata) in enumerate(sorted(bundles.items(), key=itemgetter(0))):
         img_shape = np.shape(visdata.image)
         if image_shape is None:
             image_shape = img_shape
         if img_shape != image_shape:
             raise RuntimeError(
-                f"Image shape for FOV {i} doesn't match previous: {img_shape} != {image_shape}"
+                f"Image shape for FOV {fov.get} doesn't match previous: {img_shape} != {image_shape}"
             )
         masks_shape = np.shape(visdata.masks)
         if masks_shape != image_shape:
             raise RuntimeError(
-                f"Masks shape for FOV {i} doesn't match previous: {masks_shape} != {image_shape}"
+                f"Masks shape for FOV {fov.get} doesn't match previous: {masks_shape} != {image_shape}"
             )
         images.append(visdata.image)
         masks.append(visdata.masks)
