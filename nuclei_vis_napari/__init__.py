@@ -1,6 +1,6 @@
 """A plugin for napari which allows visualisation of nuclei and nuclear regions"""
 
-__version__ = "0.4.0"
+__version__ = "0.5.0"
 
 import importlib.resources as importlib_resources
 from pathlib import Path
