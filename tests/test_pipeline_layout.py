@@ -124,8 +124,8 @@ def test_pipeline_layout_can_be_read(pipeline_example_either_zarr_format, wrap_p
 def test_pipeline_layout_gives_same_layers_as_legacy_layout(
     pipeline_example_either_zarr_format,
 ):
-    pipeline_example = pipeline_example_either_zarr_format
-    observed = get_reader(pipeline_example)(pipeline_example)  # type: ignore[misc]
+    folder = pipeline_example_either_zarr_format
+    observed = get_reader(folder)(folder)  # type: ignore[misc]
     expected = get_reader(LEGACY_EXAMPLE)(LEGACY_EXAMPLE)  # type: ignore[misc]
     assert len(observed) == len(expected)
     for (obs_data, obs_params, obs_type), (exp_data, exp_params, exp_type) in zip(
